@@ -1,0 +1,14 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./node_modules/.gen"
+}
+
+generator client_app {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.gen"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = ""
+}
