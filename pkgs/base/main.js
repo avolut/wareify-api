@@ -44202,6 +44202,7 @@ ${actions.map((e) => {
       ".hintrc": true,
       "pre-commit": true,
       "post-commit": true,
+      ".node-version": true,
       "pkgs/base/main.js": true,
       "pkgs/base/main.js.map": true,
       "**/.parcelrc": true,
