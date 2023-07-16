@@ -2807,7 +2807,7 @@
         }
         return Promise.resolve();
       };
-      var copyAsync5 = (from, to, options) => {
+      var copyAsync4 = (from, to, options) => {
         return new Promise((resolve, reject) => {
           const opts = parseOptions(options, from);
           checksBeforeCopyingAsync(from, to, opts).then(() => {
@@ -2847,7 +2847,7 @@
       };
       exports2.validateInput = validateInput;
       exports2.sync = copySync;
-      exports2.async = copyAsync5;
+      exports2.async = copyAsync4;
     }
   });
 
@@ -37039,17 +37039,47 @@ ERROR: Async operation of type "${type}" was created in "process.exit" callback.
   __export(build_exports, {
     build: () => build
   });
-  var import_fs_jetpack17, build;
+  var import_watcher2, import_child_process3, import_fs_jetpack17, build;
   var init_build = __esm({
     "app/build.ts"() {
-      "use strict";
-      init_export();
+      import_watcher2 = __require("@parcel/watcher");
+      import_child_process3 = __require("child_process");
       import_fs_jetpack17 = __toESM(require_main());
-      build = async () => {
-        if (!await (0, import_fs_jetpack17.existsAsync)(dir.root(".output/app/stencil"))) {
-          await (0, import_fs_jetpack17.copyAsync)(dir.root("stencil"), dir.root(".output/app/stencil"), {
-            overwrite: true
+      init_export();
+      build = async (mode) => {
+        let timeout;
+        const gen = (delay) => {
+          if (timeout)
+            clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            (0, import_child_process3.spawn)(
+              "./tsc",
+              [
+                dir.root("app/gen/srv/api/srv.ts"),
+                "--declaration",
+                "--emitDeclarationOnly",
+                "--outFile",
+                dir.root(".output/app/srv/api.d.ts")
+              ],
+              {
+                cwd: dir.root("app/node_modules/.bin")
+              }
+            );
+          }, delay);
+        };
+        if (mode === "dev") {
+          gen(2e3);
+          (0, import_watcher2.subscribe)(dir.root("app/srv/api"), (err2, events) => {
+            gen(2e3);
           });
+        } else {
+          const ready = async () => {
+            if (await (0, import_fs_jetpack17.existsAsync)(dir.root(".output/app/srv"))) {
+              done.unsubscribe();
+              gen();
+            }
+          };
+          const done = await (0, import_watcher2.subscribe)(dir.root(".output"), ready);
         }
       };
     }
@@ -37532,7 +37562,7 @@ ERROR: Async operation of type "${type}" was created in "process.exit" callback.
       var cp = __require("child_process");
       var parse4 = require_parse3();
       var enoent = require_enoent();
-      function spawn4(command, args2, options) {
+      function spawn5(command, args2, options) {
         const parsed = parse4(command, args2, options);
         const spawned = cp.spawn(parsed.command, parsed.args, parsed.options);
         enoent.hookChildProcess(spawned, parsed);
@@ -37544,8 +37574,8 @@ ERROR: Async operation of type "${type}" was created in "process.exit" callback.
         result.error = result.error || enoent.verifyENOENTSync(result.status, parsed);
         return result;
       }
-      module2.exports = spawn4;
-      module2.exports.spawn = spawn4;
+      module2.exports = spawn5;
+      module2.exports.spawn = spawn5;
       module2.exports.sync = spawnSync3;
       module2.exports._parse = parse4;
       module2.exports._enoent = enoent;
@@ -42252,7 +42282,7 @@ ${src}
   };
 
   // pkgs/base/src/builder/service/postrun/web.ts
-  var import_child_process3 = __require("child_process");
+  var import_child_process4 = __require("child_process");
   init_export();
   var import_fs_jetpack19 = __toESM(require_main());
   var import_path15 = __require("path");
@@ -42281,7 +42311,7 @@ ${src}
         "--dist-dir",
         dir.root(`.output/app/${name}/public`)
       ].filter((e) => e);
-      const parcel = (0, import_child_process3.spawn)("node", args2, {
+      const parcel = (0, import_child_process4.spawn)("node", args2, {
         cwd: dir.root(`app/${name}`),
         stdio: ["ignore", "inherit", "inherit"]
       });
@@ -43598,7 +43628,7 @@ ${actions.map((e) => {
   };
 
   // pkgs/base/src/upgrade.ts
-  var import_child_process4 = __require("child_process");
+  var import_child_process5 = __require("child_process");
   init_export();
 
   // node_modules/.pnpm/fflate@0.8.0/node_modules/fflate/esm/index.mjs
@@ -44126,7 +44156,7 @@ ${actions.map((e) => {
           );
         }
       }
-      (0, import_child_process4.spawnSync)("pnpm", ["i"], { cwd: dir.root(""), stdio: "inherit" });
+      (0, import_child_process5.spawnSync)("pnpm", ["i"], { cwd: dir.root(""), stdio: "inherit" });
       if (process.send) {
         process.send("exit");
       } else {
