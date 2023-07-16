@@ -14,7 +14,8 @@ export const _ = {
         res.json({ prasi: "v1" });
       },
       prisma: async () => {
-        const pdir = dir.path("db/node_modules/.gen/index.d.ts");
+        const path = req.params._.split("/").slice(1).join("/");
+        const pdir = dir.path(`db/node_modules/.gen/${path}`);
         if (await existsAsync(pdir)) {
           res.type("text/x.typescript");
           res.send(await readAsync(pdir, "utf8"));
