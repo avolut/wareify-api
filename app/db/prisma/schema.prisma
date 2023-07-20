@@ -10,5 +10,464 @@ generator client_app {
 
 datasource db {
   provider = "postgresql"
-  url      = ""
+  url      = "postgresql://postgres:c8e61dca85b63a43@db.web.andromedia.co.id:5444/wareify?schema=public"
+}
+
+model Organization {
+  id          Int                   @id @default(autoincrement())
+  name        String
+  slug        String                @unique
+  code        String                @unique
+  description String?
+  phone       String?
+  email       String?
+  website     String?
+  address     String?
+  logo        String?
+  status      OrganizationStatus    @default(ACTIVE)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  ProductType ProductType[]
+  Product     Product[]
+  Users       UserHasOrganization[]
+  Warehouse   Warehouse[]
+
+  @@map("organizations")
+}
+
+model Warehouse {
+  id             Int                @id @default(autoincrement())
+  organizationId Int
+  name           String
+  slug           String             @unique
+  code           String             @unique
+  description    String?
+  phone          String?
+  email          String?
+  address        String?
+  photo          String?
+  status         OrganizationStatus @default(ACTIVE)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  Area           Area[]
+  Batch          Batch[]
+  Issue          Issue[]
+  Receive        Receive[]
+  Transaction    Transaction[]
+  Users          UserHasWarehouse[]
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("warehouses")
+}
+
+model User {
+  id              Int                   @id @default(autoincrement())
+  email           String                @unique
+  name            String
+  username        String                @unique
+  password        String
+  status          UserStatus            @default(ACTIVE)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  IssueUser       IssueUser[]
+  ReceiveUser     ReceiveUser[]
+  organizations   UserHasOrganization[]
+  roles           UserHasRole[]
+  warehouses      UserHasWarehouse[]
+
+  @@map("users")
+}
+
+model EmailVerifyToken {
+  email     String   @id
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_verify_tokens")
+}
+
+model PasswordResetToken {
+  email     String   @id
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("password_reset_tokens")
+}
+
+model UserHasOrganization {
+  id             Int              @id @default(autoincrement())
+  userId         Int
+  organizationId Int
+  role           OrganizationRole @default(OWNER)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_has_organizations")
+}
+
+model Role {
+  id          Int                 @id @default(autoincrement())
+  name        String
+  guardName   String              @default("web")
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  permissions RoleHasPermission[]
+  users       UserHasRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id        Int                 @id @default(autoincrement())
+  name      String
+  guardName String              @default("web")
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  roles     RoleHasPermission[]
+
+  @@map("permissions")
+}
+
+model RoleHasPermission {
+  id           Int        @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@map("role_has_permissions")
+}
+
+model UserHasRole {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  roleId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_has_roles")
+}
+
+model UserHasWarehouse {
+  id          Int           @id @default(autoincrement())
+  userId      Int
+  warehouseId Int
+  role        WarehouseRole @default(PICKER)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse     @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@map("user_has_warehouses")
+}
+
+model ProductType {
+  id             Int          @id @default(autoincrement())
+  organizationId Int
+  name           String
+  slug           String       @unique
+  description    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products       Product[]
+
+  @@map("product_types")
+}
+
+model Product {
+  id             Int              @id @default(autoincrement())
+  organizationId Int
+  productTypeId  Int
+  name           String
+  slug           String           @unique
+  description    String?
+  sku            String           @unique
+  code           String           @unique
+  photo          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  batches        Batch[]
+  IssueProduct   IssueProduct[]
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  productType    ProductType      @relation(fields: [productTypeId], references: [id], onDelete: Cascade)
+  receives       ReceiveProduct[]
+
+  @@map("products")
+}
+
+model Batch {
+  id          Int          @id @default(autoincrement())
+  warehouseId Int
+  productId   Int
+  receiveId   Int
+  code        String       @unique
+  quantity    Int
+  status      BatchStatus  @default(DRAFT)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  binId       Int?
+  bin         Bin?         @relation(fields: [binId], references: [id], onDelete: Cascade)
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  receive     Receive      @relation(fields: [receiveId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse    @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  IssueBatch  IssueBatch[]
+
+  @@map("batches")
+}
+
+model Receive {
+  id              Int                 @id @default(autoincrement())
+  warehouseId     Int
+  receiveType     ReceiveType         @default(OTHERS)
+  documentNumber  String              @unique
+  documentDate    DateTime            @default(now())
+  referenceNumber String?
+  description     String?
+  status          ReceiveStatus       @default(DRAFT)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  Batch           Batch[]
+  attachments     ReceiveAttachment[]
+  products        ReceiveProduct[]
+  users           ReceiveUser[]
+  reference       Receive?            @relation("ReceiveReference", fields: [referenceNumber], references: [documentNumber], onDelete: Cascade)
+  receives        Receive[]           @relation("ReceiveReference")
+  warehouse       Warehouse           @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@map("receives")
+}
+
+model ReceiveUser {
+  id        Int      @id @default(autoincrement())
+  receiveId Int
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  receive   Receive  @relation(fields: [receiveId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("receive_users")
+}
+
+model ReceiveProduct {
+  id        Int      @id @default(autoincrement())
+  receiveId Int
+  productId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  receive   Receive  @relation(fields: [receiveId], references: [id], onDelete: Cascade)
+
+  @@map("receive_products")
+}
+
+model Area {
+  id          Int       @id @default(autoincrement())
+  warehouseId Int
+  name        String
+  slug        String    @unique
+  code        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  bins        Bin[]
+
+  @@map("areas")
+}
+
+model Bin {
+  id          Int           @id @default(autoincrement())
+  areaId      Int
+  name        String
+  slug        String        @unique
+  code        String        @unique
+  description String?
+  capacity    Int           @default(0)
+  current     Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  batches     Batch[]
+  area        Area          @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  Transaction Transaction[]
+
+  @@map("bins")
+}
+
+model ReceiveAttachment {
+  id        Int                   @id @default(autoincrement())
+  receiveId Int
+  name      String
+  path      String
+  type      ReceiveAttachmentType @default(PHOTO)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  receive   Receive               @relation(fields: [receiveId], references: [id], onDelete: Cascade)
+
+  @@map("receive_attachments")
+}
+
+model Transaction {
+  id              Int             @id @default(autoincrement())
+  warehouseId     Int
+  binId           Int
+  transactionType TransactionType
+  modelId         Int
+  amount          Int
+  total           Int
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  bin             Bin             @relation(fields: [binId], references: [id], onDelete: Cascade)
+  warehouse       Warehouse       @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
+
+model Issue {
+  id              Int               @id @default(autoincrement())
+  warehouseId     Int
+  issueType       IssueType
+  documentNumber  String            @unique
+  documentDate    DateTime          @default(now())
+  referenceNumber String?
+  description     String?
+  status          IssueStatus       @default(DRAFT)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  attachments     IssueAttachment[]
+  IssueBatch      IssueBatch[]
+  products        IssueProduct[]
+  users           IssueUser[]
+  reference       Issue?            @relation("IssueReference", fields: [referenceNumber], references: [documentNumber], onDelete: Cascade)
+  issues          Issue[]           @relation("IssueReference")
+  warehouse       Warehouse         @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@map("issues")
+}
+
+model IssueUser {
+  id        Int      @id @default(autoincrement())
+  issueId   Int
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("issue_users")
+}
+
+model IssueAttachment {
+  id        Int                   @id @default(autoincrement())
+  issueId   Int
+  name      String
+  path      String
+  type      ReceiveAttachmentType @default(PHOTO)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  issue     Issue                 @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@map("issue_attachments")
+}
+
+model IssueProduct {
+  id        Int      @id @default(autoincrement())
+  issueId   Int
+  productId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("issue_products")
+}
+
+model IssueBatch {
+  id        Int         @id @default(autoincrement())
+  issueId   Int
+  batchId   Int
+  quantity  Int
+  status    BatchStatus @default(DRAFT)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  batch     Batch       @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  issue     Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@map("issue_batches")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  STAFF
+}
+
+enum WarehouseRole {
+  ADMIN
+  PICKER
+}
+
+enum BatchStatus {
+  DRAFT
+  APPLIED
+  FINISHED
+}
+
+enum ReceiveStatus {
+  DRAFT
+  TAGGING
+  COMPLETED
+}
+
+enum ReceiveType {
+  PURCHASE_ORDER
+  PRODUCT_RETURN
+  TRANSFER
+  OTHERS
+}
+
+enum ReceiveAttachmentType {
+  PHOTO
+  DOCUMENT
+}
+
+enum TransactionType {
+  RECEIVE
+  ISSUE
+  MOVEMENT
+  STOCK_OPNAME
+}
+
+enum IssueType {
+  MAINTENANCE_ORDER
+  WORK_ORDER
+  OTHERS
+}
+
+enum IssueStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
 }
