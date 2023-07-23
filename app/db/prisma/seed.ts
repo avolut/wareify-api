@@ -5,11 +5,12 @@ import "dayjs/locale/id";
 import bcrypt from "bcrypt";
 import slug from "slug";
 import { PrismaClient } from './node_modules/.gen';
+import argon from '@node-rs/argon2';
 const prisma = new PrismaClient();
 
 const main = async () => {
   const now = dayjs().add(7, "hour").toDate();
-  const password = await bcrypt.hash("changeme", 10);
+  const password = await argon.hash("password");
   const timestamps = {
     createdAt: now,
     updatedAt: now,

@@ -2,6 +2,7 @@
   "name": "db",
   "version": "0.0.1",
   "dependencies": {
+    "@node-rs/argon2": "1.4.0",
     "@prisma/client": "4.16.1",
     "bcrypt": "^5.1.0",
     "dayjs": "^1.11.9",
