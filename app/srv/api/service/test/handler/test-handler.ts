@@ -6,7 +6,6 @@ export const _ = {
   async api() {
     const { req, res } = apiContext(this);
     const loggedIn = await authMiddleware(req, res);
-    return loggedIn;
     if (!loggedIn) {
       return ResponseFormatter.error(null, "Unauthenticated", 401);
     }

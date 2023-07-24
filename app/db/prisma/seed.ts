@@ -218,6 +218,41 @@ const main = async () => {
     });
   }
 
+  await prisma.userHasOrganization.createMany({
+    data: [
+      {
+        userId: owner.id,
+        organizationId: organization.id,
+        role: "OWNER"
+      },
+      {
+        userId: admin.id,
+        organizationId: organization.id,
+        role: "ADMIN"
+      },
+      {
+        userId: picker.id,
+        organizationId: organization.id,
+        role: "STAFF"
+      }
+    ]
+  });
+
+  await prisma.userHasWarehouse.createMany({
+    data: [
+      {
+        userId: admin.id,
+        warehouseId: 1,
+        role: "ADMIN"
+      },
+      {
+        userId: picker.id,
+        warehouseId: 1,
+        role: "PICKER"
+      },
+    ]
+  });
+
 };
 
 main()
