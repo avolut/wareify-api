@@ -23,6 +23,7 @@ export class ApplyBatchesUseCase implements IApplyBatchesUseCase {
   constructor(private batchRepository: IBatchRepository) {}
 
   async execute(request: IApplyBatchesUseCaseRequest): Promise<IApplyBatchesUseCaseResponse[]> {
+    request.receiveId = parseInt(request.receiveId.toString());
     const batches = await this.batchRepository.applyBatches(request.receiveId);
 
     return batches;

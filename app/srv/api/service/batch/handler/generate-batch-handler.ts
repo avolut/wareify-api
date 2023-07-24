@@ -2,10 +2,15 @@ import { apiContext } from "service-srv";
 import { ResponseFormatter } from "../../../core/network-result/response-formatter";
 import { GenerateBatchRequest } from "../../../core/request/generate-batch-request";
 import { GenerateBatchUseCaseFactory, IGenerateBatchUseCase } from "../use-case/generate-batch-use-case";
+import { authMiddleware } from "../../../core/utils/auth-middleware";
 export const _ = {
   url: "/api/batches/generate/",
   async api() {
     const { req, res } = apiContext(this);
+    const loggedIn = await authMiddleware(req, res);
+    if (!loggedIn) {
+      return ResponseFormatter.error(null, "Unauthenticated", 401);
+    }
     try {
       const payload: GenerateBatchRequest = await req.json();
       const generateBatchUseCase: IGenerateBatchUseCase =
