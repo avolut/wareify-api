@@ -28,7 +28,7 @@ export class CreateReceiveAttachmentUseCase implements ICreateReceiveAttachmentU
     if(request.type == ReceiveAttachmentType.PHOTO) {
       const count = await this.receiveRepository.countReceiveAttachmentByType(request.receiveId, ReceiveAttachmentType.PHOTO);
       if(count >= 3) {
-        throw new Error("Maximum photo attachment is 5");
+        throw new Error("Maximum photo attachment is 3");
       }
     } else {
       const count = await this.receiveRepository.countReceiveAttachmentByType(request.receiveId, ReceiveAttachmentType.DOCUMENT);

@@ -52,6 +52,6 @@ export async function authMiddleware(req: Request, res: Response) {
     };
     return globalThis.currentUser;
   } catch (error: any) {
-    return ResponseFormatter.error(error.message, "Unauthenticated", 401);
+    throw new Error(error.message);
   }
 }
