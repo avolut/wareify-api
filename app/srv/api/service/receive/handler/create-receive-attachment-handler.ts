@@ -37,9 +37,7 @@ export const _ = {
             CreateReceiveAttachmentUseCaseFactory.create();
           let mimeType = "";
           if (
-            file.type === "application/png" ||
-            file.type === "application/jpg" ||
-            file.type === "application/jpeg"
+            file.type.includes("image")
           ) {
             mimeType = ReceiveAttachmentType.PHOTO;
           } else {
@@ -49,7 +47,7 @@ export const _ = {
           const receiveAttachment =
             await createReceiveAttachmentUseCase.execute({
               receiveId: +id,
-              name: file.name,
+              name: file.filename,
               path: upath.url,
               type: mimeType as ReceiveAttachmentType,
             });
