@@ -3,8 +3,8 @@ import { authMiddleware } from "../../../core/utils/auth-middleware";
 import { ResponseFormatter } from "../../../core/network-result/response-formatter";
 import { ApplyBatchesUseCaseFactory, IApplyBatchesUseCase } from "../use-case/apply-batch-use-case";
 export const _ = {
-  url: "/api/batches/:code/apply/",
-  async api(code: string) {
+  url: "/api/batches/apply-receive/:id",
+  async api(id: number) {
     const { req, res } = apiContext(this);
     const loggedIn = await authMiddleware(req, res);
     if (!loggedIn) {
@@ -14,7 +14,7 @@ export const _ = {
       const applyBatchesUseCase: IApplyBatchesUseCase =
         ApplyBatchesUseCaseFactory.create();
       const batches = await applyBatchesUseCase.execute({
-        receiveId: parseInt(code),
+        receiveId: id,
       });
       return ResponseFormatter.success(batches, "Success apply batch", 200);
     } catch (error: any) {
