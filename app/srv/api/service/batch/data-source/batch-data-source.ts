@@ -145,6 +145,7 @@ export class BatchDataSource implements IBatchDataSource {
       include: {
         product: true,
         receive: true,
+        bin: true,
       },
     });
 

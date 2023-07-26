@@ -4,13 +4,14 @@ import { authMiddleware } from "../../../core/utils/auth-middleware";
 import { UpdateBatchQuantity } from "../../../core/request/update-batch-quantity";
 import { IUpdateBatchQuantityUseCase, UpdateBatchQuantityUseCaseFactory } from "../use-case/update-batch-quantity-use-case";
 export const _ = {
-  url: "/api/batches/:code/update-quantity",
+  url: "/api/batches/update-quantity/:code/",
   async api(code: string) {
     const { req, res } = apiContext(this);
     const loggedIn = await authMiddleware(req, res);
     if (!loggedIn) {
       return ResponseFormatter.error(null, "Unauthenticated", 401);
     }
+    // return code;
     try {
       const payload: UpdateBatchQuantity = await req.json();
       const updateBatchQuantityUseCase: IUpdateBatchQuantityUseCase =
