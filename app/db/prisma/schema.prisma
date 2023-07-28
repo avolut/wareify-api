@@ -56,6 +56,7 @@ model Warehouse {
   Transaction    Transaction[]
   Users          UserHasWarehouse[]
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  Movement       Movement[]
 
   @@map("warehouses")
 }
@@ -75,6 +76,7 @@ model User {
   organizations   UserHasOrganization[]
   roles           UserHasRole[]
   warehouses      UserHasWarehouse[]
+  MovementUser    MovementUser[]
 
   @@map("users")
 }
@@ -187,42 +189,44 @@ model ProductType {
 }
 
 model Product {
-  id             Int              @id @default(autoincrement())
-  organizationId Int
-  productTypeId  Int
-  name           String
-  slug           String           @unique
-  description    String?
-  sku            String           @unique
-  code           String           @unique
-  photo          String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  batches        Batch[]
-  IssueProduct   IssueProduct[]
-  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  productType    ProductType      @relation(fields: [productTypeId], references: [id], onDelete: Cascade)
-  receives       ReceiveProduct[]
+  id              Int               @id @default(autoincrement())
+  organizationId  Int
+  productTypeId   Int
+  name            String
+  slug            String            @unique
+  description     String?
+  sku             String            @unique
+  code            String            @unique
+  photo           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  batches         Batch[]
+  IssueProduct    IssueProduct[]
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  productType     ProductType       @relation(fields: [productTypeId], references: [id], onDelete: Cascade)
+  receives        ReceiveProduct[]
+  MovementProduct MovementProduct[]
 
   @@map("products")
 }
 
 model Batch {
-  id          Int          @id @default(autoincrement())
-  warehouseId Int
-  productId   Int
-  receiveId   Int
-  code        String       @unique
-  quantity    Int
-  status      BatchStatus  @default(DRAFT)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  binId       Int?
-  bin         Bin?         @relation(fields: [binId], references: [id], onDelete: Cascade)
-  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  receive     Receive      @relation(fields: [receiveId], references: [id], onDelete: Cascade)
-  warehouse   Warehouse    @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-  IssueBatch  IssueBatch[]
+  id            Int             @id @default(autoincrement())
+  warehouseId   Int
+  productId     Int
+  receiveId     Int
+  code          String          @unique
+  quantity      Int
+  status        BatchStatus     @default(DRAFT)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  binId         Int?
+  bin           Bin?            @relation(fields: [binId], references: [id], onDelete: Cascade)
+  product       Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  receive       Receive         @relation(fields: [receiveId], references: [id], onDelete: Cascade)
+  warehouse     Warehouse       @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  IssueBatch    IssueBatch[]
+  MovementBatch MovementBatch[]
 
   @@map("batches")
 }
@@ -406,6 +410,90 @@ model IssueBatch {
   issue     Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
   @@map("issue_batches")
+}
+
+model Movement {
+  id              Int                  @id @default(autoincrement())
+  warehouseId     Int
+  movementType    MovementType         @default(MOVEMENT)
+  documentNumber  String               @unique
+  documentDate    DateTime             @default(now())
+  referenceNumber String?
+  description     String?
+  status          MovementStatus       @default(DRAFT)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  reference       Movement?            @relation("MovementReference", fields: [referenceNumber], references: [documentNumber], onDelete: Cascade)
+  movements       Movement[]           @relation("MovementReference")
+  users           MovementUser[]
+  attachments     MovementAttachment[]
+  batches         MovementBatch[]
+  products        MovementProduct[]
+  warehouse       Warehouse            @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@map("movements")
+}
+
+model MovementUser {
+  id         Int      @id @default(autoincrement())
+  movementId Int
+  userId     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  movement   Movement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("movement_users")
+}
+
+model MovementAttachment {
+  id         Int                   @id @default(autoincrement())
+  movementId Int
+  name       String
+  path       String
+  type       ReceiveAttachmentType @default(PHOTO)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  movement   Movement              @relation(fields: [movementId], references: [id], onDelete: Cascade)
+
+  @@map("movement_attachments")
+}
+
+model MovementBatch {
+  id         Int         @id @default(autoincrement())
+  movementId Int
+  batchId    Int
+  quantity   Int
+  status     BatchStatus @default(DRAFT)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  batch      Batch       @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  movement   Movement    @relation(fields: [movementId], references: [id], onDelete: Cascade)
+
+  @@map("movement_batches")
+}
+
+model MovementProduct {
+  id         Int      @id @default(autoincrement())
+  movementId Int
+  productId  Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  movement   Movement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+
+  @@map("movement_products")
+}
+
+enum MovementType {
+  MOVEMENT
+  OTHERS
+}
+
+enum MovementStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
 }
 
 enum UserStatus {
