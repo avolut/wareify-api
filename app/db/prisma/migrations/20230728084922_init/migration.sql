@@ -1,4 +1,10 @@
 -- CreateEnum
+CREATE TYPE "MovementType" AS ENUM ('MOVEMENT', 'OTHERS');
+
+-- CreateEnum
+CREATE TYPE "MovementStatus" AS ENUM ('DRAFT', 'IN_PROGRESS', 'COMPLETED');
+
+-- CreateEnum
 CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'INACTIVE');
 
 -- CreateEnum
@@ -380,6 +386,70 @@ CREATE TABLE "issue_batches" (
     CONSTRAINT "issue_batches_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "movements" (
+    "id" SERIAL NOT NULL,
+    "warehouseId" INTEGER NOT NULL,
+    "movementType" "MovementType" NOT NULL DEFAULT 'MOVEMENT',
+    "documentNumber" TEXT NOT NULL,
+    "documentDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "referenceNumber" TEXT,
+    "description" TEXT,
+    "status" "MovementStatus" NOT NULL DEFAULT 'DRAFT',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "movements_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "movement_users" (
+    "id" SERIAL NOT NULL,
+    "movementId" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "movement_users_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "movement_attachments" (
+    "id" SERIAL NOT NULL,
+    "movementId" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "path" TEXT NOT NULL,
+    "type" "ReceiveAttachmentType" NOT NULL DEFAULT 'PHOTO',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "movement_attachments_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "movement_batches" (
+    "id" SERIAL NOT NULL,
+    "movementId" INTEGER NOT NULL,
+    "batchId" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "status" "BatchStatus" NOT NULL DEFAULT 'DRAFT',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "movement_batches_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "movement_products" (
+    "id" SERIAL NOT NULL,
+    "movementId" INTEGER NOT NULL,
+    "productId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "movement_products_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "organizations_slug_key" ON "organizations"("slug");
 
@@ -436,6 +506,9 @@ CREATE UNIQUE INDEX "bins_code_key" ON "bins"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "issues_documentNumber_key" ON "issues"("documentNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "movements_documentNumber_key" ON "movements"("documentNumber");
 
 -- AddForeignKey
 ALTER TABLE "warehouses" ADD CONSTRAINT "warehouses_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -544,3 +617,30 @@ ALTER TABLE "issue_batches" ADD CONSTRAINT "issue_batches_batchId_fkey" FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE "issue_batches" ADD CONSTRAINT "issue_batches_issueId_fkey" FOREIGN KEY ("issueId") REFERENCES "issues"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movements" ADD CONSTRAINT "movements_referenceNumber_fkey" FOREIGN KEY ("referenceNumber") REFERENCES "movements"("documentNumber") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movements" ADD CONSTRAINT "movements_warehouseId_fkey" FOREIGN KEY ("warehouseId") REFERENCES "warehouses"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movement_users" ADD CONSTRAINT "movement_users_movementId_fkey" FOREIGN KEY ("movementId") REFERENCES "movements"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movement_users" ADD CONSTRAINT "movement_users_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movement_attachments" ADD CONSTRAINT "movement_attachments_movementId_fkey" FOREIGN KEY ("movementId") REFERENCES "movements"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movement_batches" ADD CONSTRAINT "movement_batches_batchId_fkey" FOREIGN KEY ("batchId") REFERENCES "batches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movement_batches" ADD CONSTRAINT "movement_batches_movementId_fkey" FOREIGN KEY ("movementId") REFERENCES "movements"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movement_products" ADD CONSTRAINT "movement_products_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "movement_products" ADD CONSTRAINT "movement_products_movementId_fkey" FOREIGN KEY ("movementId") REFERENCES "movements"("id") ON DELETE CASCADE ON UPDATE CASCADE;
