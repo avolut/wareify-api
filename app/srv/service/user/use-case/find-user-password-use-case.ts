@@ -1,11 +1,11 @@
 import { IUserRepository, UserRepositoryFactory } from "../repository/user-repository";
 
 export interface IFindUserPasswordUseCaseRequest {
-  email: string;
+  username: string;
 }
 
 export interface IFindUserPasswordUseCaseResponse {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -21,10 +21,10 @@ export class FindUserPasswordUseCase implements IFindUserPasswordUseCase {
   async execute(
     request: IFindUserPasswordUseCaseRequest
   ): Promise<IFindUserPasswordUseCaseResponse> {
-    const user = await this.userRepository.findUserByEmail(request.email);
+    const user = await this.userRepository.findUserByUsername(request.username);
 
     return {
-      email: user.email,
+      username: user.username,
       password: user.password,
     };
   }

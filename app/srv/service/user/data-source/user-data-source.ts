@@ -30,6 +30,8 @@ export interface IUserDataSource {
   deletePasswordResetToken(email: string): Promise<void>;
   changePassword(email: string, password: string): Promise<UserEntity>;
   findUserPasswordByEmail(email: string): Promise<UserEntity>;
+  findUserByUsername(username: string): Promise<UserEntity>;
+  findUserPasswordByUsername(username: string): Promise<UserEntity>;
 }
 
 export class UserDataSourceFactory {
@@ -228,6 +230,36 @@ export class UserDataSource implements IUserDataSource {
       },
       select: {
         email: true,
+        password: true,
+      },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return this.mapToUserEntity(user);
+  }
+
+  public async findUserByUsername(username: string): Promise<UserEntity> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        username,
+      },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return this.mapToUserEntity(user);
+  }
+
+  public async findUserPasswordByUsername(
+    username: string
+  ): Promise<UserEntity> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        username,
+      },
+      select: {
+        username: true,
         password: true,
       },
     });
