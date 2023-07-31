@@ -30,6 +30,8 @@ export interface IUserRepository {
   deletePasswordResetToken(email: string): Promise<void>;
   changePassword(email: string, password: string): Promise<UserEntity>;
   findUserPasswordByEmail(email: string): Promise<UserEntity>;
+  findUserByUsername(username: string): Promise<UserEntity>;
+  findUserPasswordByUsername(username: string): Promise<UserEntity>;
 }
 
 export class UserRepositoryFactory {
@@ -158,6 +160,26 @@ class UserRepository implements IUserRepository {
     } catch (error) {
       console.error(
         `[UserRepository][findUserPasswordByEmail][Error] ${error}`
+      );
+      throw error;
+    }
+  }
+
+  async findUserByUsername(username: string): Promise<UserEntity> {
+    try {
+      return this.userDataSource.findUserByUsername(username);
+    } catch (error) {
+      console.error(`[UserRepository][findUserByUsername][Error] ${error}`);
+      throw error;
+    }
+  }
+
+  async findUserPasswordByUsername(username: string): Promise<UserEntity> {
+    try {
+      return this.userDataSource.findUserPasswordByUsername(username);
+    } catch (error) {
+      console.error(
+        `[UserRepository][findUserPasswordByUsername][Error] ${error}`
       );
       throw error;
     }
