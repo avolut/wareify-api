@@ -32,6 +32,8 @@ export interface IUserDataSource {
   findUserPasswordByEmail(email: string): Promise<UserEntity>;
   findUserByUsername(username: string): Promise<UserEntity>;
   findUserPasswordByUsername(username: string): Promise<UserEntity>;
+  listUsers(): Promise<UserEntity[]>;
+  listUsersByRole(role: string): Promise<UserEntity[]>;
 }
 
 export class UserDataSourceFactory {
@@ -267,6 +269,26 @@ export class UserDataSource implements IUserDataSource {
       throw new Error("User not found");
     }
     return this.mapToUserEntity(user);
+  }
+
+  public async listUsers(): Promise<UserEntity[]> {
+    const users = await this.prisma.user.findMany();
+    return users.map((user) => this.mapToUserEntity(user));
+  }
+
+  public async listUsersByRole(role: string): Promise<UserEntity[]> {
+    const users = await this.prisma.user.findMany({
+      where: {
+        roles: {
+          some: {
+            role: {
+              name: role,
+            }
+          }
+        }
+      },
+    });
+    return users.map((user) => this.mapToUserEntity(user));
   }
 
   private mapToUserEntity(user: any): UserEntity {

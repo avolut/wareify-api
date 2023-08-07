@@ -44,8 +44,8 @@ export class UpdateToCompleteUseCase implements IUpdateToCompleteUseCase {
   ) {}
 
   public async execute(
-    request: IUpdateToCompleteUseCaseRequest //IUpdateToCompleteUseCaseResponse
-  ): Promise<any> {
+    request: IUpdateToCompleteUseCaseRequest
+  ): Promise<IUpdateToCompleteUseCaseResponse> {
     const issueExist = await this.issueRepository.findById(request.issueId);
     if (!issueExist) {
       throw new Error("Issue not found");

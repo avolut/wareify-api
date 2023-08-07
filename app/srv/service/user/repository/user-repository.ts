@@ -32,6 +32,8 @@ export interface IUserRepository {
   findUserPasswordByEmail(email: string): Promise<UserEntity>;
   findUserByUsername(username: string): Promise<UserEntity>;
   findUserPasswordByUsername(username: string): Promise<UserEntity>;
+  listUsers(): Promise<UserEntity[]>;
+  listUsersByRole(role: string): Promise<UserEntity[]>;
 }
 
 export class UserRepositoryFactory {
@@ -181,6 +183,24 @@ class UserRepository implements IUserRepository {
       console.error(
         `[UserRepository][findUserPasswordByUsername][Error] ${error}`
       );
+      throw error;
+    }
+  }
+
+  async listUsers(): Promise<UserEntity[]> {
+    try {
+      return this.userDataSource.listUsers();
+    } catch (error) {
+      console.error(`[UserRepository][listUsers][Error] ${error}`);
+      throw error;
+    }
+  }
+
+  async listUsersByRole(role: string): Promise<UserEntity[]> {
+    try {
+      return this.userDataSource.listUsersByRole(role);
+    } catch (error) {
+      console.error(`[UserRepository][listUsersByRole][Error] ${error}`);
       throw error;
     }
   }
