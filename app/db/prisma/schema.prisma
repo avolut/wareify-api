@@ -197,6 +197,7 @@ model Product {
   description     String?
   sku             String            @unique
   code            String            @unique
+  uom             String            @default("PCS")
   photo           String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt

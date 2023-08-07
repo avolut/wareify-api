@@ -8,7 +8,10 @@ export class ProductEntity {
     readonly description: string,
     readonly sku: string,
     readonly code: string,
+    readonly uom: string,
     readonly photo: string,
-    readonly productType: ProductTypeEntity
+    readonly createdAt: Date,
+    readonly updatedAt: Date,
+    readonly productType? : ProductTypeEntity,
   ) {}
 }

@@ -203,6 +203,7 @@ CREATE TABLE "products" (
     "description" TEXT,
     "sku" TEXT NOT NULL,
     "code" TEXT NOT NULL,
+    "uom" TEXT NOT NULL DEFAULT 'PCS',
     "photo" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

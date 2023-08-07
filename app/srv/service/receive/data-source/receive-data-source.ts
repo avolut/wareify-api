@@ -27,6 +27,7 @@ export interface IReceiveDataSource {
   updateStatusToTagging(receiveId: number): Promise<ReceiveEntity>;
   updateStatusToCompleted(receiveId: number): Promise<ReceiveEntity>;
   countReceiveAttachmentByType(receiveId: number, type: ReceiveAttachmentType): Promise<number>;
+  getReceivesByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]>;
 }
 
 export class ReceiveDataSourceFactory {
@@ -192,6 +193,39 @@ export class ReceiveDataSource implements IReceiveDataSource {
       },
     });
   }
+
+  public async getReceivesByWarehouseId(
+    warehouseId: number
+  ): Promise<ReceiveEntity[]> {
+    const receives = await this.prisma.receive.findMany({
+      where: {
+        warehouseId,
+      },
+      include: {
+        products: {
+          include: {
+            product: true,
+          },
+        },
+        users: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return Promise.all(
+      receives.map(async (receive) => {
+        return this.mapToReceiveUserProductEntity(
+          receive,
+          receive?.products.map((product) => product.product),
+          receive?.users.map((user) => user.user)
+        );
+      })
+    );
+  }
+
 
   private async mapToReceiveEntity(receive: any): Promise<ReceiveEntity> {
     return new ReceiveEntity(
