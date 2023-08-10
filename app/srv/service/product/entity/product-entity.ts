@@ -1,3 +1,4 @@
+import { BatchEntity } from './../../batch/entity/batch-entity';
 import { ProductTypeEntity } from "./product-category-entity";
 
 export class ProductEntity {
@@ -13,5 +14,6 @@ export class ProductEntity {
     readonly createdAt: Date,
     readonly updatedAt: Date,
     readonly productType? : ProductTypeEntity,
+    readonly batches? : BatchEntity[]
   ) {}
 }
