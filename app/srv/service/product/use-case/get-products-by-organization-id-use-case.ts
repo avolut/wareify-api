@@ -18,6 +18,8 @@ export interface IGetProductsByOrganizationIdUseCaseResponse {
   photo: string;
   createdAt: Date;
   updatedAt: Date;
+  quantity?: number;
+  batchQuantity: number;
 }
 
 export interface IGetProductsByOrganizationIdUseCase {
@@ -50,6 +52,11 @@ export class GetProductsByOrganizationIdUseCase
         photo: product.photo,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
+        quantity: product.batches?.reduce(
+          (acc, batch) => acc + batch.quantity,
+          0
+        ),
+        batchQuantity: product.batches?.length || 0,
       }));
     } catch (error) {
       console.error(`[ListUsersByRoleUseCase][execute][Error] ${error}`);

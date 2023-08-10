@@ -19,12 +19,19 @@ export class ProductDataSource implements IProductDataSource {
     };
   }
 
-  public async getProductsByOrganizationId(organizationId: number): Promise<ProductEntity[]> {
+  public async getProductsByOrganizationId(
+    organizationId: number
+  ): Promise<ProductEntity[]> {
     const products = await this.prisma.product.findMany({
       where: { organizationId: organizationId },
+      include: {
+        batches: true
+      },
     });
-    
-    return Promise.all(products.map((product) => this.mapToProductEntity(product)));
+
+    return Promise.all(
+      products.map((product) => this.mapToProductEntity(product))
+    );
   }
 
   public async getProductById(id: number): Promise<ProductEntity> {
@@ -48,7 +55,9 @@ export class ProductDataSource implements IProductDataSource {
       where: { productTypeId: type },
     });
 
-    return Promise.all(products.map((product) => this.mapToProductEntity(product)));
+    return Promise.all(
+      products.map((product) => this.mapToProductEntity(product))
+    );
   }
 
   private async mapToProductEntity(product: any): Promise<ProductEntity> {
@@ -63,14 +72,17 @@ export class ProductDataSource implements IProductDataSource {
       product.type,
       product.photo,
       product.createdAt,
-      product.updatedAt
+      product.updatedAt,
+      product.batches
     );
   }
 }
 
 export class ProductDataSourceFactory {
   static create(): IProductDataSource {
-    return new ProductDataSource(new PrismaClient(),
-    dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate());
+    return new ProductDataSource(
+      new PrismaClient(),
+      dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate()
+    );
   }
 }
