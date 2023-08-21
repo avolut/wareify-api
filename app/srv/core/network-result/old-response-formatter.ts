@@ -8,18 +8,19 @@ class ResponseFormatter {
     message: string,
     status: string
   ) {
-    const responseBody = JSON.stringify({
+    const responseBody = {
       meta: {
         code: code,
         message,
         status,
       },
       data,
-    });
-    return res.send(responseBody)
+    };
+    return res.send(JSON.stringify(responseBody))
       .status(code)
       .set({
         "Content-Type": "application/json",
+        "Accept": "application/json",
         "Access-Control-Allow-Origin": "*",
       });
   }
