@@ -15,9 +15,6 @@ importers:
         specifier: ^5.5.0
         version: 5.5.0
     devDependencies:
-      husky:
-        specifier: ^8.0.3
-        version: 8.0.3
       process:
         specifier: 0.11.10
         version: 0.11.10
@@ -2583,12 +2580,6 @@ packages:
     engines: {node: '>=14.18.0'}
     dev: false
 
-  /husky@8.0.3:
-    resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
-    engines: {node: '>=14'}
-    hasBin: true
-    dev: true
-
   /hyper-express@6.7.1:
     resolution: {integrity: sha512-QjcHXsMZ/ujoTOp6yI9r1OOw14CloghO4iHxlRyUEmTwhVW4p+2Ak8iNrpsdDUV/MczhYNGkQ5Rw3lm+yGSoeA==}
     dependencies:
@@ -2990,6 +2981,7 @@ packages:
   /node-gyp-build-optional-packages@5.0.7:
     resolution: {integrity: sha512-YlCCc6Wffkx0kHkmam79GKvDQ6x+QZkMjFGrIMxgFNILFvGSbCp2fCBC55pGTT9gVaz8Na5CLmxt/urtzRv36w==}
     hasBin: true
+    requiresBuild: true
     dev: false
     optional: true
 
