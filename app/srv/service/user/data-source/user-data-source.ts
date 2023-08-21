@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
+// import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
 import { UserEntity } from "../entity/user-entity";
 import { EmailVerifyTokenEntity } from "../entity/email-verify-token-entity";
 import { PasswordResetTokenEntity } from "../entity/password-reset-token-entity";
@@ -38,13 +38,13 @@ export interface IUserDataSource {
 
 export class UserDataSourceFactory {
   static create(): IUserDataSource {
-    return new UserDataSource(new PrismaClient(), dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), 'hour').toDate());
+    return new UserDataSource(db, dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), 'hour').toDate());
   }
 }
 
 export class UserDataSource implements IUserDataSource {
   private timestamps: object;
-  constructor(private prisma: PrismaClient, private now: Date) {
+  constructor(private prisma: any, private now: Date) {
     this.timestamps = {
       createdAt: this.now,
       updatedAt: this.now,
@@ -273,7 +273,7 @@ export class UserDataSource implements IUserDataSource {
 
   public async listUsers(): Promise<UserEntity[]> {
     const users = await this.prisma.user.findMany();
-    return users.map((user) => this.mapToUserEntity(user));
+    return users.map((user: any) => this.mapToUserEntity(user));
   }
 
   public async listUsersByRole(role: string): Promise<UserEntity[]> {
@@ -288,7 +288,7 @@ export class UserDataSource implements IUserDataSource {
         }
       },
     });
-    return users.map((user) => this.mapToUserEntity(user));
+    return users.map((user: any) => this.mapToUserEntity(user));
   }
 
   private mapToUserEntity(user: any): UserEntity {

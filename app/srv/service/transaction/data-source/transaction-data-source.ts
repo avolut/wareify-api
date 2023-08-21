@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
+// import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
 import { global } from "../../../global";
 import { TransactionEntity, TransactionType } from "../entity/transaction-entity";
 import dayjs from "dayjs";
@@ -16,7 +16,7 @@ export interface ITransactionDataSource {
 
 export class TransactionDataSource implements ITransactionDataSource {
   private timestamps: object;
-  constructor(private prisma: PrismaClient, private now: Date) {
+  constructor(private prisma: any, private now: Date) {
     this.timestamps = {
       createdAt: this.now,
       updatedAt: this.now,
@@ -69,6 +69,6 @@ export class TransactionDataSource implements ITransactionDataSource {
 
 export class TransactionDataSourceFactory {
   public static create(): ITransactionDataSource {
-    return new TransactionDataSource(new PrismaClient(), dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate());
+    return new TransactionDataSource(db, dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate());
   }
 }

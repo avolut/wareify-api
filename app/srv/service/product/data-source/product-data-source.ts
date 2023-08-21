@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { ProductEntity } from "../entity/product-entity";
-import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
+// import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
 import { global } from "../../../global";
 
 export interface IProductDataSource {
@@ -12,7 +12,7 @@ export interface IProductDataSource {
 
 export class ProductDataSource implements IProductDataSource {
   private timestamps: object;
-  constructor(private prisma: PrismaClient, private now: Date) {
+  constructor(private prisma: any, private now: Date) {
     this.timestamps = {
       createdAt: this.now,
       updatedAt: this.now,
@@ -81,7 +81,7 @@ export class ProductDataSource implements IProductDataSource {
 export class ProductDataSourceFactory {
   static create(): IProductDataSource {
     return new ProductDataSource(
-      new PrismaClient(),
+      db,
       dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate()
     );
   }

@@ -1,5 +1,5 @@
 import { apiContext } from "service-srv";
-// import { ResponseFormatter } from "../../../core/network-result/response-formatter";
+import { ResponseFormatter } from "../../../core/network-result/response-formatter";
 import oldResponseFormatter from "../../../core/network-result/old-response-formatter";
 import {
   FindUserPasswordUseCaseFactory,
@@ -46,7 +46,7 @@ export const _ = {
         token,
         user: userByUsername,
       };
-      return oldResponseFormatter.success(res, data, "Login success");
+      return ResponseFormatter.success(data, "Login success");
     } catch (error: any) {
       return oldResponseFormatter.error(res, error.message, "Internal Server Error", 500);
     }

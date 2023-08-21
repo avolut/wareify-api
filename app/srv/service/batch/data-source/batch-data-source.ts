@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
+// import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
 import { BatchEntity, BatchStatus } from "../entity/batch-entity";
 import dayjs from "dayjs";
 import { IssueBatchEntity } from "../entity/issue-batch-entity";
@@ -46,7 +46,7 @@ export interface IBatchDataSource {
 
 export class BatchDataSource implements IBatchDataSource {
   private timestamps: object;
-  constructor(private prisma: PrismaClient, private now: Date) {
+  constructor(private prisma: any, private now: Date) {
     this.timestamps = {
       createdAt: this.now,
       updatedAt: this.now,
@@ -362,7 +362,7 @@ export class BatchDataSource implements IBatchDataSource {
 export class BatchDataSourceFactory {
   static create(): IBatchDataSource {
     return new BatchDataSource(
-      new PrismaClient(),
+      db,
       dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate()
     );
   }

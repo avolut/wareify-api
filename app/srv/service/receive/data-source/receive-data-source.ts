@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
+// import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
 import { ReceiveEntity, ReceiveType } from "../entity/receive-entity";
 import dayjs from "dayjs";
 import {
@@ -33,7 +33,7 @@ export interface IReceiveDataSource {
 export class ReceiveDataSourceFactory {
   static create(): IReceiveDataSource {
     return new ReceiveDataSource(
-      new PrismaClient(),
+      db,
       dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate()
     );
   }
@@ -41,7 +41,7 @@ export class ReceiveDataSourceFactory {
 
 export class ReceiveDataSource implements IReceiveDataSource {
   private timestamps: object;
-  constructor(private prisma: PrismaClient, private now: Date) {
+  constructor(private prisma: any, private now: Date) {
     this.timestamps = {
       createdAt: this.now,
       updatedAt: this.now,

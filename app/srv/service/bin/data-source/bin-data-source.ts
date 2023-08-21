@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
+// import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
 import { global } from "../../../global";
 import { BinEntity } from "../entity/bin-entity";
 import dayjs from "dayjs";
@@ -11,7 +11,7 @@ export interface IBinDataSource {
 
 export class BinDataSource implements IBinDataSource {
   private timestamps: object;
-  constructor(private prisma: PrismaClient, private now: Date) {
+  constructor(private prisma: any, private now: Date) {
     this.timestamps = {
       createdAt: this.now,
       updatedAt: this.now,
@@ -114,7 +114,7 @@ export class BinDataSource implements IBinDataSource {
 export class BinDataSourceFactory {
   static create(): IBinDataSource {
     return new BinDataSource(
-      new PrismaClient(),
+      db,
       dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate()
     );
   }

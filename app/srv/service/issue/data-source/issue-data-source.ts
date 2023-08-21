@@ -1,5 +1,5 @@
 import { global } from '../../../global';
-import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
+// import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
 import { IssueEntity, IssueStatus, IssueType } from "../entity/issue-entity";
 import { ReceiveAttachmentType } from "../../receive/entity/receive-attachment-entity";
 import { IssueAttachmentEntity } from "../entity/issue-attachment-entity";
@@ -29,7 +29,7 @@ export interface IIssueDataSource {
 
 export class IssueDataSource implements IIssueDataSource {
   private timestamps: object;
-  constructor(private prisma: PrismaClient, private now: Date) {
+  constructor(private prisma: any, private now: Date) {
     this.timestamps = {
       createdAt: this.now,
       updatedAt: this.now,
@@ -209,7 +209,7 @@ export class IssueDataSource implements IIssueDataSource {
 export class IssueDataSourceFactory {
   static create(): IIssueDataSource {
     return new IssueDataSource(
-      new PrismaClient(),
+      db,
       dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate()
     );
   }

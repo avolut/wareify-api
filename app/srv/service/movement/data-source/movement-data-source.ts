@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
+// import { PrismaClient } from "../../../../../app/db/node_modules/.gen";
 import { global } from "../../../global";
 import dayjs from "dayjs";
 import { MovementEntity, MovementType } from "../entity/movement-entity";
@@ -30,7 +30,7 @@ export interface IMovementDataSource {
 export class MovementDataSourceFactory {
   static create(): IMovementDataSource {
     return new MovementDataSource(
-      new PrismaClient(),
+      db,
       dayjs().add(parseInt(global.UTC_TIMEZONE.toString()), "hour").toDate()
     );
   }
@@ -38,7 +38,7 @@ export class MovementDataSourceFactory {
 
 export class MovementDataSource implements IMovementDataSource {
   private timestamps: object;
-  constructor(private prisma: PrismaClient, private now: Date) {
+  constructor(private prisma: any, private now: Date) {
     this.timestamps = {
       createdAt: this.now,
       updatedAt: this.now,
