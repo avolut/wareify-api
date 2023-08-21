@@ -1,5 +1,6 @@
 import { apiContext } from "service-srv";
-import { ResponseFormatter } from "../../../core/network-result/response-formatter";
+// import { ResponseFormatter } from "../../../core/network-result/response-formatter";
+import oldResponseFormatter from "../../../core/network-result/old-response-formatter";
 import {
   FindUserPasswordUseCaseFactory,
   IFindUserPasswordUseCase,
@@ -16,14 +17,6 @@ export const _ = {
     const { req, res } = apiContext(this);
     
     try {
-      // return req.json();
-      // const validation = LoginSchema.decode(req.json());
-
-      // if (validation._tag === "Left") {
-      //   const errorMessages = PathReporter.report(validation);
-      //   return ResponseFormatter.error(errorMessages, "Bad Request", 400);
-      // }
-      // const credentials = validation.right;
       const credentials: LoginRequest = await req.json();
       const findUserPasswordUseCase: IFindUserPasswordUseCase =
         FindUserPasswordUseCaseFactory.create();
@@ -31,14 +24,14 @@ export const _ = {
         username: credentials.username,
       });
       if (!user) {
-        return ResponseFormatter.error(null, "User not found", 400);
+        return oldResponseFormatter.error(res, null, "User not found", 400);
       }
       const isPasswordMatch = await argon.verify(
         user.password,
         credentials.password
       );
       if (!isPasswordMatch) {
-        return ResponseFormatter.error(null, "Wrong password", 400);
+        return oldResponseFormatter.error(res, null, "Wrong password", 400);
       }
       const FindUserByUsernameUseCase: IFindUserByUsernameUseCase =
         FindUserByUsernameUseCaseFactory.create();
@@ -53,9 +46,9 @@ export const _ = {
         token,
         user: userByUsername,
       };
-      return ResponseFormatter.success(data, "Login success");
+      return oldResponseFormatter.success(res, data, "Login success");
     } catch (error: any) {
-      return ResponseFormatter.error(error.message, "Internal Server Error", 500);
+      return oldResponseFormatter.error(res, error.message, "Internal Server Error", 500);
     }
   },
 };
