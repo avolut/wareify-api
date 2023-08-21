@@ -44,9 +44,9 @@ export const _ = {
                 p.key.type === "Identifier"
               ) {
                 if (p.key.value === "select") {
-                  extractField(p.value, select);
+                  extractField((p as any).value, select);
                 } else if (p.key.value === "where") {
-                  extractField(p.value, where);
+                  extractField((p as any).value, where);
                 }
               }
             }

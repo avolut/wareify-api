@@ -18,7 +18,7 @@ type ApiName = keyof Api;
 interface WebGlobal {
   extractCss: typeof GooberExtractCSS;
   router: RadixRouter<Page>;
-  routerSSR: RadixRouter<{ ssr: OnRequestSSR; params: any }>;
+  routerSSR: RadixRouter<{ ssr: OnRequestSSR; params: never }>;
   navigate: (href: string) => void;
   isSSR: boolean;
 

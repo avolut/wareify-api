@@ -726,7 +726,7 @@
           }).then(resolve, reject);
         });
       };
-      var writeAsync19 = (path4, data, options) => {
+      var writeAsync20 = (path4, data, options) => {
         const opts = options || {};
         const processedData = serializeToJsonMaybe(data, opts.jsonIndent);
         let writeStrategy = writeFileAsync;
@@ -737,7 +737,7 @@
       };
       exports2.validateInput = validateInput;
       exports2.sync = writeSync;
-      exports2.async = writeAsync19;
+      exports2.async = writeAsync20;
     }
   });
 
@@ -37051,17 +37051,60 @@ ERROR: Async operation of type "${type}" was created in "process.exit" callback.
         const gen = (delay) => {
           if (timeout)
             clearTimeout(timeout);
-          timeout = setTimeout(() => {
+          timeout = setTimeout(async () => {
+            if (!await (0, import_fs_jetpack17.existsAsync)(dir.root("app/gen/web/entry.ts"))) {
+              await (0, import_fs_jetpack17.writeAsync)(
+                dir.root("app/gen/web/entry.ts"),
+                "export const _ = {}"
+              );
+            }
+            if (!await (0, import_fs_jetpack17.existsAsync)(dir.root("app/gen/web/ssr/entry.ts"))) {
+              await (0, import_fs_jetpack17.writeAsync)(
+                dir.root("app/gen/web/ssr/entry.ts"),
+                "export const _ = {}"
+              );
+            }
+            if (!await (0, import_fs_jetpack17.existsAsync)(dir.root("app/gen/web/layout/entry.ts"))) {
+              await (0, import_fs_jetpack17.writeAsync)(
+                dir.root("app/gen/web/layout/entry.ts"),
+                "export const _ = {}"
+              );
+            }
+            if (!await (0, import_fs_jetpack17.existsAsync)(dir.root("app/gen/web/page/entry.ts"))) {
+              await (0, import_fs_jetpack17.writeAsync)(
+                dir.root("app/gen/web/page/entry.ts"),
+                "export const _ = {}"
+              );
+            }
+            if (!await (0, import_fs_jetpack17.existsAsync)(dir.root("app/gen/web/page/entry-ssr.ts"))) {
+              await (0, import_fs_jetpack17.writeAsync)(
+                dir.root("app/gen/web/page/entry-ssr.ts"),
+                "export const _ = {}"
+              );
+            }
             (0, import_child_process3.spawn)(
               "./tsc",
               [
                 dir.root("app/gen/srv/api/srv.ts"),
                 "--declaration",
                 "--emitDeclarationOnly",
+                "--esModuleInterop",
+                "--noEmitOnError",
+                "false",
+                "--jsx",
+                "preserve",
+                "--target",
+                "esnext",
+                "--module",
+                "esnext",
+                "--moduleResolution",
+                "node",
+                "--skipLibCheck",
                 "--outFile",
                 dir.root(".output/app/srv/api.d.ts")
               ],
               {
+                stdio: mode !== "dev" ? "inherit" : void 0,
                 cwd: dir.root("app/node_modules/.bin")
               }
             );
