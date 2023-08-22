@@ -1,9 +1,7 @@
-// import { ResponseFormatter } from "../network-result/response-formatter";
-import { Request, Response } from "service-srv/node_modules/hyper-express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { PrismaClient } from "../../../db/node_modules/.gen";
 
-export async function authMiddleware(req: Request, res: Response) {
+export async function authMiddleware(req: any, res: any) {
   try {
     const { authorization } = req.headers;
     if (!authorization) {
