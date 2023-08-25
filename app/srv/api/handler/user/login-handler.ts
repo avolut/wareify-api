@@ -15,11 +15,10 @@ import {
 
 export const _ = {
   url: "/api/login",
-  async api() {
+  async api(login: { username: string; password: string}) {
     const { req, res } = apiContext(this);
-
     try {
-      const credentials: LoginRequest = await req.json();
+      const credentials: LoginRequest = login;
       const findUserPasswordUseCase: IFindUserPasswordUseCase =
         FindUserPasswordUseCaseFactory.create();
       const user = await findUserPasswordUseCase.execute({

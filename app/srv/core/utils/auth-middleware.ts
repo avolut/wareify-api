@@ -5,11 +5,12 @@ export async function authMiddleware(req: any, res: any) {
   try {
     const { authorization } = req.headers;
     if (!authorization) {
-      throw new Error("Authorization header is required");
+      // return new Error("Authorization header is required");
+      return "Authorization header is required";
     }
     const token = authorization.split(" ")[1];
     if (!token) {
-      throw new Error("Token is required");
+      return new Error("Token is required");
     }
     const decoded = jwt.verify(token, "secretKeyForJWT") as JwtPayload;
     const prisma = new PrismaClient();
@@ -36,7 +37,8 @@ export async function authMiddleware(req: any, res: any) {
       },
     });
     if (!user) {
-      throw new Error("Unauthenticated");
+      // return new Error("Unauthenticated");
+      return "Unauthenticated";
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
@@ -50,6 +52,7 @@ export async function authMiddleware(req: any, res: any) {
     };
     return globalThis.currentUser;
   } catch (error: any) {
-    throw new Error(error.message);
+    // return new Error(error.message);
+    return error.message;
   }
 }

@@ -5,13 +5,14 @@ import {
   GetReceiveByWarehouseIdUseCaseFactory,
   IGetReceiveByWarehouseIdUseCase,
 } from "../../../service/receive/use-case/get-receives-by-warehouse-id-use-case";
+import { type } from "io-ts";
 export const _ = {
   url: "/api/receives/list/:warehouseId",
   async api(warehouseId: string) {
     const { req, res } = apiContext(this);
     const loggedIn = await authMiddleware(req, res);
-    if (!loggedIn) {
-      return ResponseFormatter.error(null, "Unauthenticated", 401);
+    if (typeof loggedIn === "string") {
+      return ResponseFormatter.error(null, loggedIn, 401);
     }
     try {
       const getReceivesByWarehouseIdUseCase: IGetReceiveByWarehouseIdUseCase =

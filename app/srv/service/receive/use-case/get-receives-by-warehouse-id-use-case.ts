@@ -14,7 +14,10 @@ export interface IGetReceiveByWarehouseIdUseCaseResponse {
   status: ReceiveStatus;
   createdAt: Date;
   updatedAt: Date;
+  productCount: number;
+  totalQuantity: number;
   products: any;
+  batches: any;
   users: any;
 }
 
@@ -44,7 +47,13 @@ export class GetReceiveByWarehouseIdUseCase
         status: receive.status,
         createdAt: receive.createdAt,
         updatedAt: receive.updatedAt,
+        productCount: receive.products!.length,
+        totalQuantity: receive.batches!.reduce(
+          (acc: number, batch: any) => acc + batch.quantity,
+          0
+        ),
         products: receive.products,
+        batches: receive.batches,
         users: receive.users,
       };
     });
