@@ -1,3 +1,4 @@
+import { BatchEntity } from "../../batch/entity/batch-entity";
 import { ProductEntity } from "../../product/entity/product-entity";
 import { UserEntity } from "../../user/entity/user-entity";
 import { ReceiveAttachmentEntity } from "./receive-attachment-entity";
@@ -29,6 +30,7 @@ export class ReceiveEntity {
     readonly updatedAt: Date,
     readonly products?: ProductEntity[],
     readonly users?: UserEntity[],
+    readonly batches?: BatchEntity[],
     readonly receiveAttachments?: ReceiveAttachmentEntity[],
   ) {}
 }

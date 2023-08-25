@@ -149,8 +149,8 @@ export class ReceiveDataSource implements IReceiveDataSource {
     });
     return this.mapToReceiveUserProductEntity(
       receive,
-      receive?.products.map((product) => product.product),
-      receive?.users.map((user) => user.user)
+      receive?.products.map((product: any) => product.product),
+      receive?.users.map((user: any) => user.user)
     );
   }
 
@@ -207,6 +207,7 @@ export class ReceiveDataSource implements IReceiveDataSource {
             product: true,
           },
         },
+        Batch: true,
         users: {
           include: {
             user: true,
@@ -216,11 +217,12 @@ export class ReceiveDataSource implements IReceiveDataSource {
     });
 
     return Promise.all(
-      receives.map(async (receive) => {
+      receives.map(async (receive: any) => {
         return this.mapToReceiveUserProductEntity(
           receive,
-          receive?.products.map((product) => product.product),
-          receive?.users.map((user) => user.user)
+          receive?.products.map((product: any) => product.product),
+          receive?.users.map((user: any) => user.user),
+          receive?.Batch
         );
       })
     );
@@ -259,7 +261,8 @@ export class ReceiveDataSource implements IReceiveDataSource {
   private async mapToReceiveUserProductEntity(
     receive: any,
     products: any,
-    users: any
+    users: any,
+    batches?: any
   ): Promise<ReceiveEntity> {
     return new ReceiveEntity(
       receive.id,
@@ -273,7 +276,8 @@ export class ReceiveDataSource implements IReceiveDataSource {
       receive.createdAt,
       receive.updatedAt,
       products,
-      users
+      users,
+      batches
     );
   }
 }
