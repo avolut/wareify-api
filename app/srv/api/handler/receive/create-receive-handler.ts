@@ -6,16 +6,23 @@ import {
   CreateReceiveUseCaseFactory,
   ICreateReceiveUseCase,
 } from "../../../service/receive/use-case/create-receive-use-case";
+import { ReceiveType } from "../../../service/receive/entity/receive-entity";
 export const _ = {
   url: "/api/receives/",
-  async api() {
+  async api(createReceive:{
+    documentDate: Date;
+    warehouseId: number;
+    receiveType: ReceiveType;
+    userIds: number[];
+    productIds: number[];
+  }) {
     const { req, res } = apiContext(this);
     const loggedIn = await authMiddleware(req, res);
     if (typeof loggedIn === "string") {
       return ResponseFormatter.error(null, loggedIn, 401);
     }
     try {
-      const payload: CreateReceiveRequest = await req.json();
+      const payload: CreateReceiveRequest = createReceive;
       const createReceiveUseCase: ICreateReceiveUseCase =
         CreateReceiveUseCaseFactory.create();
       const receive = await createReceiveUseCase.execute(payload);

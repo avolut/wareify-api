@@ -4,8 +4,8 @@ import dayjs from "dayjs";
 import "dayjs/locale/id";
 import bcrypt from "bcrypt";
 import slug from "slug";
-import { PrismaClient } from './node_modules/.gen';
-import argon from '@node-rs/argon2';
+import { PrismaClient } from "./node_modules/.gen";
+import argon from "@node-rs/argon2";
 const prisma = new PrismaClient();
 
 const main = async () => {
@@ -57,7 +57,7 @@ const main = async () => {
       password,
       emailVerifiedAt: now,
       ...timestamps,
-    }
+    },
   });
 
   await prisma.role.createMany({
@@ -110,7 +110,7 @@ const main = async () => {
       address: "Jl. Raya Kebayoran Lama No. 12, Jakarta Selatan",
       logo: "https://www.wareify.com/logo.png",
       ...timestamps,
-    }
+    },
   });
 
   await prisma.warehouse.createMany({
@@ -136,8 +136,8 @@ const main = async () => {
         email: "gudang2@wareify.com",
         address: "Jl. Raya Kebayoran Lama No. 12, Jakarta Selatan",
         ...timestamps,
-      }
-    ]
+      },
+    ],
   });
 
   await prisma.area.createMany({
@@ -157,8 +157,8 @@ const main = async () => {
         code: "AREA-002",
         description: "Area 2",
         ...timestamps,
-      }
-    ]
+      },
+    ],
   });
 
   await prisma.bin.createMany({
@@ -180,8 +180,8 @@ const main = async () => {
         capacity: 100,
         description: "Bin 2",
         ...timestamps,
-      }
-    ]
+      },
+    ],
   });
 
   await prisma.productType.createMany({
@@ -199,22 +199,22 @@ const main = async () => {
         slug: slug("Product Type 2"),
         description: "Product Type 2",
         ...timestamps,
-      }
-    ]
+      },
+    ],
   });
 
-  for(let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 10; i++) {
     await prisma.product.create({
       data: {
         name: `Product ${i}`,
         organizationId: organization.id,
-        productTypeId: i%2 === 0 ? 1 : 2,
+        productTypeId: i % 2 === 0 ? 1 : 2,
         slug: slug(`Product ${i}`),
         sku: `SKU-${i}`,
         description: `Product ${i}`,
         code: `PRD-${i}`,
         ...timestamps,
-      }
+      },
     });
   }
 
@@ -223,19 +223,19 @@ const main = async () => {
       {
         userId: owner.id,
         organizationId: organization.id,
-        role: "OWNER"
+        role: "OWNER",
       },
       {
         userId: admin.id,
         organizationId: organization.id,
-        role: "ADMIN"
+        role: "ADMIN",
       },
       {
         userId: picker.id,
         organizationId: organization.id,
-        role: "STAFF"
-      }
-    ]
+        role: "STAFF",
+      },
+    ],
   });
 
   await prisma.userHasWarehouse.createMany({
@@ -243,17 +243,82 @@ const main = async () => {
       {
         userId: admin.id,
         warehouseId: 1,
-        role: "ADMIN"
+        role: "ADMIN",
       },
       {
         userId: picker.id,
         warehouseId: 1,
-        role: "PICKER"
+        role: "PICKER",
       },
-    ]
+    ],
   });
 
-};
+  for (let i = 2; i <= 10; i++) {
+    await prisma.user.create({
+      data: {
+        name: `Picker ${i}`,
+        username: `picker${i}`,
+        email: `picker${i}@test.test`,
+        password,
+        emailVerifiedAt: now,
+        ...timestamps,
+        roles: {
+          create: {
+            roleId: 4,
+            ...timestamps,
+          },
+        },
+        organizations: {
+          create: {
+            organizationId: organization.id,
+            role: "STAFF",
+          },
+        },
+        warehouses: {
+          create: {
+            warehouseId: 1,
+            role: "PICKER",
+          },
+        },
+      },
+    });
+  }
+
+  for (let i = 1; i <= 10; i++) {
+    await prisma.receive.create({
+      data: {
+        warehouseId: 1,
+        receiveType: "PURCHASE_ORDER",
+        documentNumber: `RCV${i.toString().padStart(9, "0")}`,
+        documentDate: now,
+        description: `Receive Description ${i}`,
+        status: i % 2 === 0 ? "DRAFT" : "COMPLETED",
+        ...timestamps,
+        products: {
+          create: [
+            {
+              productId: 1,
+              ...timestamps,
+            },
+            {
+              productId: 2,
+              ...timestamps,
+            },
+          ],
+        },
+        Batch: {
+          create: {
+            productId: 1,
+            warehouseId: 1,
+            code: `BATCH-${i}`,
+            quantity: 10,
+            binId: 1,
+          },
+        },
+      },
+    });
+  }
+}; // end of main
 
 main()
   .then(async () => {
