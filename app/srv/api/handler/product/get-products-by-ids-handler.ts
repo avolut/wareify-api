@@ -1,19 +1,19 @@
 import { apiContext } from "service-srv";
 import { ResponseFormatter } from "../../../core/network-result/response-formatter";
 import { authMiddleware } from "../../../core/utils/auth-middleware";
-import { GetProductsByOrganizationIdUseCaseFactory, IGetProductsByOrganizationIdUseCase } from "../../../service/product/use-case/get-products-by-organization-id-use-case";
+import { GetProductsByIdsUseCaseFactory, IGetProductsByIdsUseCase } from "../../../service/product/use-case/get-products-by-ids-use-case";
 export const _ = {
-  url: "/api/products/:organizationId",
-  async api(organizationId: string) {
+  url: "/api/products/by/ids",
+  async api(ids: string[]) {
     const { req, res } = apiContext(this);
     const loggedIn = await authMiddleware(req, res);
     if (typeof loggedIn === "string") {
       return ResponseFormatter.error(null, loggedIn, 401);
     }
     try {
-      const getProductsByOrganizationIdUseCase: IGetProductsByOrganizationIdUseCase = GetProductsByOrganizationIdUseCaseFactory.create();
-      const products = await getProductsByOrganizationIdUseCase.execute({
-        organizationId: parseInt(organizationId),
+      const getProductsByIdsUseCase: IGetProductsByIdsUseCase = GetProductsByIdsUseCaseFactory.create();
+      const products = await getProductsByIdsUseCase.execute({
+        ids: ids.map((id) => parseInt(id)),
       });
       return ResponseFormatter.success(products, "Get products success");
     } catch (error: any) {

@@ -6,6 +6,7 @@ export interface IProductRepository {
   getProductById(id: number): Promise<ProductEntity>;
   getProductBySlug(slug: string): Promise<ProductEntity>;
   getProductByType(type: number): Promise<ProductEntity[]>;
+  getProductsByIds(ids: number[]): Promise<ProductEntity[]>;
 }
 
 export class ProductRepositoryFactory {
@@ -31,5 +32,9 @@ class ProductRepository implements IProductRepository {
 
   async getProductByType(type: number): Promise<ProductEntity[]> {
     return this.productDataSource.getProductByType(type);
+  }
+
+  async getProductsByIds(ids: number[]): Promise<ProductEntity[]> {
+    return this.productDataSource.getProductsByIds(ids);
   }
 }

@@ -10,8 +10,8 @@ export const _ = {
   async api(id: number) {
     const { req, res } = apiContext(this);
     const loggedIn = await authMiddleware(req, res);
-    if (!loggedIn) {
-      return ResponseFormatter.error(null, "Unauthenticated", 401);
+    if (typeof loggedIn === "string") {
+      return ResponseFormatter.error(null, loggedIn, 401);
     }
     try {
       const updateStatusToTaggingUseCase: IUpdateStatusToTaggingUseCase =

@@ -8,6 +8,7 @@ export interface IProductDataSource {
   getProductById(id: number): Promise<ProductEntity>;
   getProductBySlug(slug: string): Promise<ProductEntity>;
   getProductByType(type: number): Promise<ProductEntity[]>;
+  getProductsByIds(ids: number[]): Promise<ProductEntity[]>;
 }
 
 export class ProductDataSource implements IProductDataSource {
@@ -30,7 +31,7 @@ export class ProductDataSource implements IProductDataSource {
     });
 
     return Promise.all(
-      products.map((product) => this.mapToProductEntity(product))
+      products.map((product: any) => this.mapToProductEntity(product))
     );
   }
 
@@ -56,7 +57,17 @@ export class ProductDataSource implements IProductDataSource {
     });
 
     return Promise.all(
-      products.map((product) => this.mapToProductEntity(product))
+      products.map((product: any) => this.mapToProductEntity(product))
+    );
+  }
+
+  public async getProductsByIds(ids: number[]): Promise<ProductEntity[]> {
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: ids } },
+    });
+
+    return Promise.all(
+      products.map((product: any) => this.mapToProductEntity(product))
     );
   }
 
