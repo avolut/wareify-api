@@ -30,6 +30,7 @@ export interface IReceiveDataSource {
   getReceivesByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]>;
   countReceiveDraftByWarehouseId(warehouseId: number): Promise<number>;
   getReceivesDraftByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]>;
+  getReceiveById(receiveId: number): Promise<ReceiveEntity>;
 }
 
 export class ReceiveDataSourceFactory {
@@ -276,6 +277,32 @@ export class ReceiveDataSource implements IReceiveDataSource {
           receive?.Batch
         );
       })
+    );
+  }
+
+  public async getReceiveById(receiveId: number): Promise<ReceiveEntity> {
+    const receive = await this.prisma.receive.findUnique({
+      where: { id: receiveId },
+      include: {
+        products: {
+          include: {
+            product: true,
+          },
+        },
+        Batch: true,
+        users: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return this.mapToReceiveUserProductEntity(
+      receive,
+      receive?.products.map((product: any) => product.product),
+      receive?.users.map((user: any) => user.user),
+      receive?.Batch
     );
   }
 
