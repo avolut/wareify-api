@@ -27,6 +27,7 @@ export interface IReceiveRepository {
   getReceivesByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]>;
   countReceiveDraftByWarehouseId(warehouseId: number): Promise<number>;
   getReceivesDraftByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]>;
+  getReceiveById(receiveId: number): Promise<ReceiveEntity>;
 }
 
 
@@ -154,6 +155,16 @@ class ReceiveRepository implements IReceiveRepository {
       return this.receiveDataSource.getReceivesDraftByWarehouseId(warehouseId);
     } catch (error) {
       console.error(`[ReceiveRepository][getReceivesDraftByWarehouseId][Error] ${error}`);
+      throw error;
+    }
+  }
+
+  async getReceiveById(receiveId: number): Promise<ReceiveEntity> {
+    try {
+      receiveId = parseInt(receiveId.toString());
+      return this.receiveDataSource.getReceiveById(receiveId);
+    } catch (error) {
+      console.error(`[ReceiveRepository][getReceiveById][Error] ${error}`);
       throw error;
     }
   }

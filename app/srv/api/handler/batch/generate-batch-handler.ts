@@ -5,14 +5,20 @@ import { GenerateBatchUseCaseFactory, IGenerateBatchUseCase } from "../../../ser
 import { authMiddleware } from "../../../core/utils/auth-middleware";
 export const _ = {
   url: "/api/batches/generate/",
-  async api() {
+  async api(generateBatches: {
+    receiveId: number;
+    productId: number;
+    warehouseId: number;
+    quantity: number;
+    batch: number
+  }) {
     const { req, res } = apiContext(this);
     const loggedIn = await authMiddleware(req, res);
     if (!loggedIn) {
       return ResponseFormatter.error(null, "Unauthenticated", 401);
     }
     try {
-      const payload: GenerateBatchRequest = await req.json();
+      const payload: GenerateBatchRequest = generateBatches;
       const generateBatchUseCase: IGenerateBatchUseCase =
         GenerateBatchUseCaseFactory.create();
 
