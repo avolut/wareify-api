@@ -1,11 +1,11 @@
 import { ReceiveStatus, ReceiveType } from "../entity/receive-entity";
 import { IReceiveRepository, ReceiveRepositoryFactory } from "../repository/receive-repository";
 
-export interface IGetReceiveByWarehouseIdUseCaseRequest {
+export interface IGetReceivesDraftByWarehouseIdUseCaseRequest {
   warehouseId: number;
 }
 
-export interface IGetReceiveByWarehouseIdUseCaseResponse {
+export interface IGetReceivesDraftByWarehouseIdUseCaseResponse {
   id: number;
   documentNumber: string;
   documentDate: Date;
@@ -22,20 +22,20 @@ export interface IGetReceiveByWarehouseIdUseCaseResponse {
   users: any;
 }
 
-export interface IGetReceiveByWarehouseIdUseCase {
+export interface IGetReceivesDraftByWarehouseIdUseCase {
   execute(
-    request: IGetReceiveByWarehouseIdUseCaseRequest
-  ): Promise<IGetReceiveByWarehouseIdUseCaseResponse[]>;
+    request: IGetReceivesDraftByWarehouseIdUseCaseRequest
+  ): Promise<IGetReceivesDraftByWarehouseIdUseCaseResponse[]>;
 }
 
-export class GetReceiveByWarehouseIdUseCase
-  implements IGetReceiveByWarehouseIdUseCase {
+export class GetReceivesDraftByWarehouseIdUseCase
+  implements IGetReceivesDraftByWarehouseIdUseCase {
   constructor(private receiveRepository: IReceiveRepository) {}
 
   async execute(
-    request: IGetReceiveByWarehouseIdUseCaseRequest
-  ): Promise<IGetReceiveByWarehouseIdUseCaseResponse[]> {
-    const receives = await this.receiveRepository.getReceivesByWarehouseId(
+    request: IGetReceivesDraftByWarehouseIdUseCaseRequest
+  ): Promise<IGetReceivesDraftByWarehouseIdUseCaseResponse[]> {
+    const receives = await this.receiveRepository.getReceivesDraftByWarehouseId(
       request.warehouseId
     );
     return receives.map((receive) => {
@@ -62,10 +62,9 @@ export class GetReceiveByWarehouseIdUseCase
   }
 }
 
-export class GetReceiveByWarehouseIdUseCaseFactory {
-  static create(): IGetReceiveByWarehouseIdUseCase {
-    return new GetReceiveByWarehouseIdUseCase(
-      ReceiveRepositoryFactory.create()
-    );
+export class GetReceivesDraftByWarehouseIdUseCaseFactory {
+  static create() {
+    const receiveRepository = ReceiveRepositoryFactory.create();
+    return new GetReceivesDraftByWarehouseIdUseCase(receiveRepository);
   }
 }
