@@ -25,6 +25,8 @@ export interface IReceiveRepository {
   updateStatusToCompleted(id: number): Promise<ReceiveEntity>;
   countReceiveAttachmentByType(receiveId: number, type: ReceiveAttachmentType): Promise<number>;
   getReceivesByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]>;
+  countReceiveDraftByWarehouseId(warehouseId: number): Promise<number>;
+  getReceivesDraftByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]>;
 }
 
 
@@ -132,6 +134,26 @@ class ReceiveRepository implements IReceiveRepository {
       return this.receiveDataSource.getReceivesByWarehouseId(warehouseId);
     } catch (error) {
       console.error(`[ReceiveRepository][getReceivesByWarehouseId][Error] ${error}`);
+      throw error;
+    }
+  }
+
+  async countReceiveDraftByWarehouseId(warehouseId: number): Promise<number> {
+    try {
+      warehouseId = parseInt(warehouseId.toString());
+      return this.receiveDataSource.countReceiveDraftByWarehouseId(warehouseId);
+    } catch (error) {
+      console.error(`[ReceiveRepository][countReceiveDraftByWarehouseId][Error] ${error}`);
+      throw error;
+    }
+  }
+
+  async getReceivesDraftByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]> {
+    try {
+      warehouseId = parseInt(warehouseId.toString());
+      return this.receiveDataSource.getReceivesDraftByWarehouseId(warehouseId);
+    } catch (error) {
+      console.error(`[ReceiveRepository][getReceivesDraftByWarehouseId][Error] ${error}`);
       throw error;
     }
   }

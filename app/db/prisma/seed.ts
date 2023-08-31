@@ -292,7 +292,7 @@ const main = async () => {
         documentNumber: `RCV${i.toString().padStart(9, "0")}`,
         documentDate: now,
         description: `Receive Description ${i}`,
-        status: i % 2 === 0 ? "DRAFT" : "COMPLETED",
+        status: i % 2 === 0 ? "DRAFT" : "TAGGING",
         ...timestamps,
         products: {
           create: [
@@ -313,8 +313,17 @@ const main = async () => {
             code: `BATCH-${i}`,
             quantity: 10,
             binId: 1,
+            status: "APPLIED"
           },
         },
+        users: {
+          create: [
+            {
+              userId: 1,
+              ...timestamps,
+            }
+          ]
+        }
       },
     });
   }

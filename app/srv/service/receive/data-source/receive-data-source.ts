@@ -28,6 +28,8 @@ export interface IReceiveDataSource {
   updateStatusToCompleted(receiveId: number): Promise<ReceiveEntity>;
   countReceiveAttachmentByType(receiveId: number, type: ReceiveAttachmentType): Promise<number>;
   getReceivesByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]>;
+  countReceiveDraftByWarehouseId(warehouseId: number): Promise<number>;
+  getReceivesDraftByWarehouseId(warehouseId: number): Promise<ReceiveEntity[]>;
 }
 
 export class ReceiveDataSourceFactory {
@@ -200,6 +202,55 @@ export class ReceiveDataSource implements IReceiveDataSource {
     const receives = await this.prisma.receive.findMany({
       where: {
         warehouseId,
+        NOT: {
+          status: "DRAFT",
+        }
+      },
+      include: {
+        products: {
+          include: {
+            product: true,
+          },
+        },
+        Batch: true,
+        users: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return Promise.all(
+      receives.map(async (receive: any) => {
+        return this.mapToReceiveUserProductEntity(
+          receive,
+          receive?.products.map((product: any) => product.product),
+          receive?.users.map((user: any) => user.user),
+          receive?.Batch
+        );
+      })
+    );
+  }
+
+  public async countReceiveDraftByWarehouseId(
+    warehouseId: number
+  ): Promise<number> {
+    return await this.prisma.receive.count({
+      where: {
+        warehouseId,
+        status: "DRAFT",
+      },
+    });
+  }
+
+  public async getReceivesDraftByWarehouseId(
+    warehouseId: number
+  ): Promise<ReceiveEntity[]> {
+    const receives = await this.prisma.receive.findMany({
+      where: {
+        warehouseId,
+        status: "DRAFT",
       },
       include: {
         products: {
