@@ -1,9 +1,7 @@
-import { ReceiveType } from "../../service/receive/entity/receive-entity";
-
 export type CreateReceiveRequest = {
-  documentDate: Date;
+  documentDate: String;
   warehouseId: number;
-  receiveType: ReceiveType;
+  receiveType: String;
   userIds?: number[];
   productIds?: number[];
   description?: string;

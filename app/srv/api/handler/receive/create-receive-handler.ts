@@ -7,12 +7,13 @@ import {
   ICreateReceiveUseCase,
 } from "../../../service/receive/use-case/create-receive-use-case";
 import { ReceiveType } from "../../../service/receive/entity/receive-entity";
+import dayjs from "dayjs";
 export const _ = {
   url: "/api/receives/",
   async api(createReceive:{
-    documentDate: Date;
+    documentDate: String;
     warehouseId: number;
-    receiveType: ReceiveType;
+    receiveType: String;
     userIds: number[];
     productIds: number[];
   }) {
@@ -25,7 +26,13 @@ export const _ = {
       const payload: CreateReceiveRequest = createReceive;
       const createReceiveUseCase: ICreateReceiveUseCase =
         CreateReceiveUseCaseFactory.create();
-      const receive = await createReceiveUseCase.execute(payload);
+      const receive = await createReceiveUseCase.execute({
+        documentDate: dayjs(payload.documentDate.toString()).toDate(),
+        warehouseId: payload.warehouseId,
+        receiveType: ReceiveType[payload.receiveType as keyof typeof ReceiveType],
+        userIds: payload.userIds,
+        productIds: payload.productIds,
+      });
       return ResponseFormatter.success(receive, "Receive created", 201);
     } catch (error: any) {
       return ResponseFormatter.error(null, error.message, 500);
