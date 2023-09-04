@@ -31,6 +31,8 @@ model Organization {
   Product     Product[]
   Users       UserHasOrganization[]
   Warehouse   Warehouse[]
+  branches    Branch[]
+  assets      Asset[]
 
   @@map("organizations")
 }
@@ -77,6 +79,7 @@ model User {
   roles           UserHasRole[]
   warehouses      UserHasWarehouse[]
   MovementUser    MovementUser[]
+  branches        UserHasBranch[]
 
   @@map("users")
 }
@@ -486,6 +489,209 @@ model MovementProduct {
   @@map("movement_products")
 }
 
+model Branch {
+  id                  Int                  @id @default(autoincrement())
+  organizationId      Int
+  organization        Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name                String
+  address             String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  sections            Section[]
+  users               UserHasBranch[]
+  inspectionSchedules InspectionSchedule[]
+
+  @@map("branches")
+}
+
+model Section {
+  id        Int      @id @default(autoincrement())
+  branchId  Int
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  assets    Asset[]
+
+  @@map("sections")
+}
+
+model UserHasBranch {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  branchId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@map("user_has_branches")
+}
+
+model AssetCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  assets    Asset[]
+
+  @@map("asset_categories")
+}
+
+model Asset {
+  id                   Int                   @id @default(autoincrement())
+  assetCategoryId      Int
+  sectionId            Int
+  organizationId       Int
+  name                 String
+  code                 String                @unique
+  length               Float?
+  width                Float?
+  height               Float?
+  weight               Float?
+  dimension            Float?
+  uom                  String?
+  status               AssetStatus           @default(READY)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  assetCategory        AssetCategory         @relation(fields: [assetCategoryId], references: [id], onDelete: Cascade)
+  section              Section               @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  organization         Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parameterInspections ParameterInspection[]
+  AssetStandard        AssetStandard[]
+  maintenances         Maintenance[]
+
+  @@map("assets")
+}
+
+model ParameterInspection {
+  id                Int                @id @default(autoincrement())
+  assetId           Int
+  name              String
+  description       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  asset             Asset              @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  inspectionDetails InspectionDetail[]
+
+  @@map("parameter_inspections")
+}
+
+model StandardList {
+  id            Int             @id @default(autoincrement())
+  name          String
+  code          String          @unique
+  description   String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  AssetStandard AssetStandard[]
+  maintenances  Maintenance[]
+
+  @@map("standard_lists")
+}
+
+model AssetStandard {
+  id             Int          @id @default(autoincrement())
+  assetId        Int
+  standardListId Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  asset          Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  standardList   StandardList @relation(fields: [standardListId], references: [id], onDelete: Cascade)
+
+  @@map("asset_standard")
+}
+
+model InspectionSchedule {
+  id        Int      @id @default(autoincrement())
+  branchId  Int
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@map("inspection_schedules")
+}
+
+model Inspection {
+  id                   Int                @id @default(autoincrement())
+  branchId             Int
+  assetId              Int
+  inspectionScheduleId Int?
+  documentNumber       String             @unique
+  inspectionDate       DateTime           @default(now())
+  description          String?
+  code                 String             @unique
+  inspectionResult     InspectionResult   @default(GOOD)
+  inspectionStatus     InspectionStatus   @default(DRAFTED)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  inspectionDetails    InspectionDetail[]
+  maintenances         Maintenance[]
+
+  @@map("inspections")
+}
+
+model InspectionDetail {
+  id                    Int                 @id @default(autoincrement())
+  inspectionId          Int
+  parameterInspectionId Int
+  description           String?
+  inspectionScore       Int
+  colorRate             ColorRate
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  inspection            Inspection          @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  parameterInspection   ParameterInspection @relation(fields: [parameterInspectionId], references: [id], onDelete: Cascade)
+
+  @@map("inspection_details")
+}
+
+model Vendor {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  maintenances Maintenance[]
+
+  @@map("vendors")
+}
+
+model Maintenance {
+  id                  Int                 @id @default(autoincrement())
+  maintenanceType     MaintenanceType
+  assetId             Int?
+  inspectionOrder     String?
+  standardListId      Int?
+  maintenanceExecutor MaintenanceExecutor @default(INTERNAL)
+  vendorId            Int?
+  maintenanceDate     DateTime            @default(now())
+  description         String?
+  status              MaintenanceStatus   @default(DRAFTED)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  asset               Asset?              @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  inspection          Inspection?         @relation(fields: [inspectionOrder], references: [code], onDelete: Cascade)
+  standardList        StandardList?       @relation(fields: [standardListId], references: [id], onDelete: Cascade)
+  vendor              Vendor?             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("maintenances")
+}
+
+model EnterpriseFile {
+  id             Int                @id @default(autoincrement())
+  modelable_type String
+  modelable_id   Int
+  path           String
+  type           EnterpriseFileType @default(PHOTO)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@map("enterprise_files")
+}
+
 enum MovementType {
   MOVEMENT
   OTHERS
@@ -559,4 +765,49 @@ enum IssueStatus {
   DRAFT
   IN_PROGRESS
   COMPLETED
+}
+
+enum AssetStatus {
+  READY
+  NOT_READY
+}
+
+enum InspectionResult {
+  GOOD
+  GOOD_WITH_COMMENT
+  NEED_TO_REPAIR
+}
+
+enum InspectionStatus {
+  COMPLETED
+  DRAFTED
+  CANCELLED
+}
+
+enum ColorRate {
+  RED
+  YELLOW
+  GREEN
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+}
+
+enum MaintenanceExecutor {
+  EXTERNAL
+  INTERNAL
+}
+
+enum MaintenanceStatus {
+  COMPLETED
+  DRAFTED
+  IN_PROGRESS
+  CANCELLED
+}
+
+enum EnterpriseFileType {
+  PHOTO
+  DOCUMENT
 }
