@@ -37,6 +37,30 @@ CREATE TYPE "IssueType" AS ENUM ('MAINTENANCE_ORDER', 'WORK_ORDER', 'OTHERS');
 -- CreateEnum
 CREATE TYPE "IssueStatus" AS ENUM ('DRAFT', 'IN_PROGRESS', 'COMPLETED');
 
+-- CreateEnum
+CREATE TYPE "AssetStatus" AS ENUM ('READY', 'NOT_READY');
+
+-- CreateEnum
+CREATE TYPE "InspectionResult" AS ENUM ('GOOD', 'GOOD_WITH_COMMENT', 'NEED_TO_REPAIR');
+
+-- CreateEnum
+CREATE TYPE "InspectionStatus" AS ENUM ('COMPLETED', 'DRAFTED', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "ColorRate" AS ENUM ('RED', 'YELLOW', 'GREEN');
+
+-- CreateEnum
+CREATE TYPE "MaintenanceType" AS ENUM ('PREVENTIVE', 'CORRECTIVE');
+
+-- CreateEnum
+CREATE TYPE "MaintenanceExecutor" AS ENUM ('EXTERNAL', 'INTERNAL');
+
+-- CreateEnum
+CREATE TYPE "MaintenanceStatus" AS ENUM ('COMPLETED', 'DRAFTED', 'IN_PROGRESS', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "EnterpriseFileType" AS ENUM ('PHOTO', 'DOCUMENT');
+
 -- CreateTable
 CREATE TABLE "organizations" (
     "id" SERIAL NOT NULL,
@@ -451,6 +475,192 @@ CREATE TABLE "movement_products" (
     CONSTRAINT "movement_products_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "branches" (
+    "id" SERIAL NOT NULL,
+    "organizationId" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "address" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "branches_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sections" (
+    "id" SERIAL NOT NULL,
+    "branchId" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "sections_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "user_has_branches" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "branchId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "user_has_branches_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "asset_categories" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "asset_categories_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "assets" (
+    "id" SERIAL NOT NULL,
+    "assetCategoryId" INTEGER NOT NULL,
+    "sectionId" INTEGER NOT NULL,
+    "organizationId" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "length" DOUBLE PRECISION,
+    "width" DOUBLE PRECISION,
+    "height" DOUBLE PRECISION,
+    "weight" DOUBLE PRECISION,
+    "dimension" DOUBLE PRECISION,
+    "uom" TEXT,
+    "status" "AssetStatus" NOT NULL DEFAULT 'READY',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "assets_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "parameter_inspections" (
+    "id" SERIAL NOT NULL,
+    "assetId" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "parameter_inspections_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "standard_lists" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "standard_lists_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "asset_standard" (
+    "id" SERIAL NOT NULL,
+    "assetId" INTEGER NOT NULL,
+    "standardListId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "asset_standard_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "inspection_schedules" (
+    "id" SERIAL NOT NULL,
+    "branchId" INTEGER NOT NULL,
+    "code" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "inspection_schedules_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "inspections" (
+    "id" SERIAL NOT NULL,
+    "branchId" INTEGER NOT NULL,
+    "assetId" INTEGER NOT NULL,
+    "inspectionScheduleId" INTEGER,
+    "documentNumber" TEXT NOT NULL,
+    "inspectionDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "description" TEXT,
+    "code" TEXT NOT NULL,
+    "inspectionResult" "InspectionResult" NOT NULL DEFAULT 'GOOD',
+    "inspectionStatus" "InspectionStatus" NOT NULL DEFAULT 'DRAFTED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "inspections_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "inspection_details" (
+    "id" SERIAL NOT NULL,
+    "inspectionId" INTEGER NOT NULL,
+    "parameterInspectionId" INTEGER NOT NULL,
+    "description" TEXT,
+    "inspectionScore" INTEGER NOT NULL,
+    "colorRate" "ColorRate" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "inspection_details_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "vendors" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "vendors_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "maintenances" (
+    "id" SERIAL NOT NULL,
+    "maintenanceType" "MaintenanceType" NOT NULL,
+    "assetId" INTEGER,
+    "inspectionOrder" TEXT,
+    "standardListId" INTEGER,
+    "maintenanceExecutor" "MaintenanceExecutor" NOT NULL DEFAULT 'INTERNAL',
+    "vendorId" INTEGER,
+    "maintenanceDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "description" TEXT,
+    "status" "MaintenanceStatus" NOT NULL DEFAULT 'DRAFTED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "maintenances_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "enterprise_files" (
+    "id" SERIAL NOT NULL,
+    "modelable_type" TEXT NOT NULL,
+    "modelable_id" INTEGER NOT NULL,
+    "path" TEXT NOT NULL,
+    "type" "EnterpriseFileType" NOT NULL DEFAULT 'PHOTO',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "enterprise_files_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "organizations_slug_key" ON "organizations"("slug");
 
@@ -510,6 +720,24 @@ CREATE UNIQUE INDEX "issues_documentNumber_key" ON "issues"("documentNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "movements_documentNumber_key" ON "movements"("documentNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "asset_categories_code_key" ON "asset_categories"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "assets_code_key" ON "assets"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "standard_lists_code_key" ON "standard_lists"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "inspection_schedules_code_key" ON "inspection_schedules"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "inspections_documentNumber_key" ON "inspections"("documentNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "inspections_code_key" ON "inspections"("code");
 
 -- AddForeignKey
 ALTER TABLE "warehouses" ADD CONSTRAINT "warehouses_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -645,3 +873,54 @@ ALTER TABLE "movement_products" ADD CONSTRAINT "movement_products_productId_fkey
 
 -- AddForeignKey
 ALTER TABLE "movement_products" ADD CONSTRAINT "movement_products_movementId_fkey" FOREIGN KEY ("movementId") REFERENCES "movements"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "branches" ADD CONSTRAINT "branches_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "sections" ADD CONSTRAINT "sections_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "branches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_has_branches" ADD CONSTRAINT "user_has_branches_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_has_branches" ADD CONSTRAINT "user_has_branches_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "branches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "assets" ADD CONSTRAINT "assets_assetCategoryId_fkey" FOREIGN KEY ("assetCategoryId") REFERENCES "asset_categories"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "assets" ADD CONSTRAINT "assets_sectionId_fkey" FOREIGN KEY ("sectionId") REFERENCES "sections"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "assets" ADD CONSTRAINT "assets_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "parameter_inspections" ADD CONSTRAINT "parameter_inspections_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "asset_standard" ADD CONSTRAINT "asset_standard_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "asset_standard" ADD CONSTRAINT "asset_standard_standardListId_fkey" FOREIGN KEY ("standardListId") REFERENCES "standard_lists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "inspection_schedules" ADD CONSTRAINT "inspection_schedules_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "branches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "inspection_details" ADD CONSTRAINT "inspection_details_inspectionId_fkey" FOREIGN KEY ("inspectionId") REFERENCES "inspections"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "inspection_details" ADD CONSTRAINT "inspection_details_parameterInspectionId_fkey" FOREIGN KEY ("parameterInspectionId") REFERENCES "parameter_inspections"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "maintenances" ADD CONSTRAINT "maintenances_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "maintenances" ADD CONSTRAINT "maintenances_inspectionOrder_fkey" FOREIGN KEY ("inspectionOrder") REFERENCES "inspections"("code") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "maintenances" ADD CONSTRAINT "maintenances_standardListId_fkey" FOREIGN KEY ("standardListId") REFERENCES "standard_lists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "maintenances" ADD CONSTRAINT "maintenances_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "vendors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
