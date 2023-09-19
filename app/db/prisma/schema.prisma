@@ -8,10 +8,18 @@ generator client_app {
   output   = "../node_modules/.gen"
 }
 
+// datasource db {
+//   provider = "postgresql"
+//   url      = "postgresql://postgres:@localhost:5432/wareify?schema=public"
+// }
 datasource db {
-  provider = "postgresql"
-  url      = "postgresql://postgres:c8e61dca85b63a43@db.web.andromedia.co.id:5444/wareify?schema=public"
+  provider = "mysql"
+  url      = "mysql://u123169838_wareify:Mwehehe$1979@156.67.222.1:3306/u123169838_wareify"
 }
+// datasource db {
+//   provider = "postgresql"
+//   url      = "postgresql://postgres:c8e61dca85b63a43@db.web.andromedia.co.id:5444/wareify?schema=public"
+// }
 
 model Organization {
   id          Int                   @id @default(autoincrement())
@@ -80,6 +88,7 @@ model User {
   warehouses      UserHasWarehouse[]
   MovementUser    MovementUser[]
   branches        UserHasBranch[]
+  inspections     Inspection[]
 
   @@map("users")
 }
@@ -501,7 +510,7 @@ model Branch {
   users               UserHasBranch[]
   inspectionSchedules InspectionSchedule[]
 
-  @@map("branches")
+  @@map("EAM_branches")
 }
 
 model Section {
@@ -513,7 +522,7 @@ model Section {
   updatedAt DateTime @updatedAt
   assets    Asset[]
 
-  @@map("sections")
+  @@map("EAM_sections")
 }
 
 model UserHasBranch {
@@ -525,7 +534,7 @@ model UserHasBranch {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
-  @@map("user_has_branches")
+  @@map("EAM_user_has_branches")
 }
 
 model AssetCategory {
@@ -536,7 +545,7 @@ model AssetCategory {
   updatedAt DateTime @updatedAt
   assets    Asset[]
 
-  @@map("asset_categories")
+  @@map("EAM_asset_categories")
 }
 
 model Asset {
@@ -552,7 +561,7 @@ model Asset {
   weight               Float?
   dimension            Float?
   uom                  String?
-  status               AssetStatus           @default(READY)
+  status               AssetStatus           @default(NOT_YET)
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   assetCategory        AssetCategory         @relation(fields: [assetCategoryId], references: [id], onDelete: Cascade)
@@ -562,7 +571,7 @@ model Asset {
   AssetStandard        AssetStandard[]
   maintenances         Maintenance[]
 
-  @@map("assets")
+  @@map("EAM_assets")
 }
 
 model ParameterInspection {
@@ -575,7 +584,7 @@ model ParameterInspection {
   asset             Asset              @relation(fields: [assetId], references: [id], onDelete: Cascade)
   inspectionDetails InspectionDetail[]
 
-  @@map("parameter_inspections")
+  @@map("EAM_parameter_inspections")
 }
 
 model StandardList {
@@ -588,7 +597,7 @@ model StandardList {
   AssetStandard AssetStandard[]
   maintenances  Maintenance[]
 
-  @@map("standard_lists")
+  @@map("EAM_standard_lists")
 }
 
 model AssetStandard {
@@ -600,7 +609,7 @@ model AssetStandard {
   asset          Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
   standardList   StandardList @relation(fields: [standardListId], references: [id], onDelete: Cascade)
 
-  @@map("asset_standard")
+  @@map("EAM_asset_standard")
 }
 
 model InspectionSchedule {
@@ -611,13 +620,14 @@ model InspectionSchedule {
   updatedAt DateTime @updatedAt
   branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
-  @@map("inspection_schedules")
+  @@map("EAM_inspection_schedules")
 }
 
 model Inspection {
   id                   Int                @id @default(autoincrement())
   branchId             Int
   assetId              Int
+  userId               Int?
   inspectionScheduleId Int?
   documentNumber       String             @unique
   inspectionDate       DateTime           @default(now())
@@ -629,8 +639,9 @@ model Inspection {
   updatedAt            DateTime           @updatedAt
   inspectionDetails    InspectionDetail[]
   maintenances         Maintenance[]
+  user                 User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("inspections")
+  @@map("EAM_inspections")
 }
 
 model InspectionDetail {
@@ -645,7 +656,7 @@ model InspectionDetail {
   inspection            Inspection          @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
   parameterInspection   ParameterInspection @relation(fields: [parameterInspectionId], references: [id], onDelete: Cascade)
 
-  @@map("inspection_details")
+  @@map("EAM_inspection_details")
 }
 
 model Vendor {
@@ -656,7 +667,7 @@ model Vendor {
   updatedAt    DateTime      @updatedAt
   maintenances Maintenance[]
 
-  @@map("vendors")
+  @@map("EAM_vendors")
 }
 
 model Maintenance {
@@ -677,7 +688,7 @@ model Maintenance {
   standardList        StandardList?       @relation(fields: [standardListId], references: [id], onDelete: Cascade)
   vendor              Vendor?             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
-  @@map("maintenances")
+  @@map("EAM_maintenances")
 }
 
 model EnterpriseFile {
@@ -689,7 +700,7 @@ model EnterpriseFile {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
-  @@map("enterprise_files")
+  @@map("EAM_enterprise_files")
 }
 
 enum MovementType {
@@ -768,6 +779,7 @@ enum IssueStatus {
 }
 
 enum AssetStatus {
+  NOT_YET
   READY
   NOT_READY
 }
@@ -781,7 +793,8 @@ enum InspectionResult {
 enum InspectionStatus {
   COMPLETED
   DRAFTED
-  CANCELLED
+  ASSIGNED
+  IN_PROGRESS
 }
 
 enum ColorRate {
