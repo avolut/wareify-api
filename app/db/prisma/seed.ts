@@ -15,7 +15,7 @@ const main = async () => {
     createdAt: now,
     updatedAt: now,
   };
-
+ 
   const superAdmin = await prisma.user.create({
     data: {
       name: "Super Admin",

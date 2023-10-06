@@ -13,9 +13,10 @@ generator client_app {
 //   url      = "postgresql://postgres:@localhost:5432/wareify?schema=public"
 // }
 datasource db {
-  provider = "mysql"
-  url      = "mysql://u123169838_wareify:Mwehehe$1979@156.67.222.1:3306/u123169838_wareify"
+  provider = "postgres"
+  url      = "postgresql://postgres:wareify123androlut!@139.99.37.154:5432/wareify-eam?schema=public"
 }
+
 // datasource db {
 //   provider = "postgresql"
 //   url      = "postgresql://postgres:c8e61dca85b63a43@db.web.andromedia.co.id:5444/wareify?schema=public"
@@ -89,6 +90,8 @@ model User {
   MovementUser    MovementUser[]
   branches        UserHasBranch[]
   inspections     Inspection[]
+  maintenances    Maintenance[]
+  userSessions    UserSession[]
 
   @@map("users")
 }
@@ -219,6 +222,7 @@ model Product {
   productType     ProductType       @relation(fields: [productTypeId], references: [id], onDelete: Cascade)
   receives        ReceiveProduct[]
   MovementProduct MovementProduct[]
+  itemLists       ItemList[]
 
   @@map("products")
 }
@@ -259,8 +263,8 @@ model Receive {
   attachments     ReceiveAttachment[]
   products        ReceiveProduct[]
   users           ReceiveUser[]
-  reference       Receive?            @relation("ReceiveReference", fields: [referenceNumber], references: [documentNumber], onDelete: Cascade)
-  receives        Receive[]           @relation("ReceiveReference")
+  // reference       Receive?            @relation("ReceiveReference", fields: [referenceNumber], references: [documentNumber], onDelete: Cascade)
+  // receives        Receive[]           @relation("ReceiveReference")
   warehouse       Warehouse           @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 
   @@map("receives")
@@ -568,8 +572,9 @@ model Asset {
   section              Section               @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   organization         Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   parameterInspections ParameterInspection[]
-  AssetStandard        AssetStandard[]
   maintenances         Maintenance[]
+  maintenanceTasks     MaintenanceTask[]
+  standardLists        StandardList[]
 
   @@map("EAM_assets")
 }
@@ -588,29 +593,30 @@ model ParameterInspection {
 }
 
 model StandardList {
-  id            Int             @id @default(autoincrement())
-  name          String
-  code          String          @unique
-  description   String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  AssetStandard AssetStandard[]
-  maintenances  Maintenance[]
+  id           Int           @id @default(autoincrement())
+  assetId      Int
+  name         String
+  code         String        @unique
+  description  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  maintenances Maintenance[]
+  asset        Asset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
   @@map("EAM_standard_lists")
 }
 
-model AssetStandard {
-  id             Int          @id @default(autoincrement())
-  assetId        Int
-  standardListId Int
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  asset          Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  standardList   StandardList @relation(fields: [standardListId], references: [id], onDelete: Cascade)
+// model AssetStandard {
+//   id             Int          @id @default(autoincrement())
+//   assetId        Int
+//   standardListId Int
+//   createdAt      DateTime     @default(now())
+//   updatedAt      DateTime     @updatedAt
+//   asset          Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
+//   standardList   StandardList @relation(fields: [standardListId], references: [id], onDelete: Cascade)
 
-  @@map("EAM_asset_standard")
-}
+//   @@map("EAM_asset_standard")
+// }
 
 model InspectionSchedule {
   id        Int      @id @default(autoincrement())
@@ -673,6 +679,7 @@ model Vendor {
 model Maintenance {
   id                  Int                 @id @default(autoincrement())
   maintenanceType     MaintenanceType
+  userId              Int?
   assetId             Int?
   inspectionOrder     String?
   standardListId      Int?
@@ -680,27 +687,87 @@ model Maintenance {
   vendorId            Int?
   maintenanceDate     DateTime            @default(now())
   description         String?
+  documentNumber      String              @unique
+  poReference         String?
   status              MaintenanceStatus   @default(DRAFTED)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
+  user                User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
   asset               Asset?              @relation(fields: [assetId], references: [id], onDelete: Cascade)
   inspection          Inspection?         @relation(fields: [inspectionOrder], references: [code], onDelete: Cascade)
   standardList        StandardList?       @relation(fields: [standardListId], references: [id], onDelete: Cascade)
   vendor              Vendor?             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  taskLists           TaskList[]
+  itemLists           ItemList[]
 
   @@map("EAM_maintenances")
 }
 
 model EnterpriseFile {
-  id             Int                @id @default(autoincrement())
-  modelable_type String
-  modelable_id   Int
-  path           String
-  type           EnterpriseFileType @default(PHOTO)
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  id            Int                @id @default(autoincrement())
+  modelableType String
+  modelableId   Int
+  path          String
+  type          EnterpriseFileType @default(PHOTO)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
   @@map("EAM_enterprise_files")
+}
+
+model MaintenanceTask {
+  id          Int        @id @default(autoincrement())
+  assetId     Int
+  name        String
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  asset       Asset      @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  taskLists   TaskList[]
+
+  @@map("EAM_maintenance_tasks")
+}
+
+model TaskList {
+  id                Int             @id @default(autoincrement())
+  maintenanceTaskId Int
+  maintenanceId     Int
+  description       String?
+  quantity          Int
+  price             Int
+  status            ListStatus      @default(UNDONE)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  maintenanceTask   MaintenanceTask @relation(fields: [maintenanceTaskId], references: [id], onDelete: Cascade)
+  maintenance       Maintenance     @relation(fields: [maintenanceId], references: [id], onDelete: Cascade)
+
+  @@map("EAM_task_lists")
+}
+
+model ItemList {
+  id            Int         @id @default(autoincrement())
+  productId     Int
+  maintenanceId Int
+  description   String?
+  quantity      Int
+  price         Int
+  status        ListStatus  @default(UNDONE)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  maintenance   Maintenance @relation(fields: [maintenanceId], references: [id], onDelete: Cascade)
+
+  @@map("EAM_item_lists")
+}
+
+model UserSession {
+  id        String   @id @default(uuid())
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
 }
 
 enum MovementType {
@@ -817,10 +884,16 @@ enum MaintenanceStatus {
   COMPLETED
   DRAFTED
   IN_PROGRESS
+  ASSIGNED
   CANCELLED
 }
 
 enum EnterpriseFileType {
   PHOTO
   DOCUMENT
+}
+
+enum ListStatus {
+  UNDONE
+  DONE
 }
